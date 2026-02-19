@@ -1,0 +1,12 @@
+{
+  "name": "roq/kucoin_futures/DropCopyState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "subscribe"
+    },
+    {
+      "name": "done"
+    }
+  ]
+}

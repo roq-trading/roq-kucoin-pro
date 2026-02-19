@@ -1,0 +1,35 @@
+# config template for the roq-kucoin-futures gateway
+
+symbols = [
+  "^ETHUSD[A-Z]M$",
+  "^XBTUSD[A-Z]M$"
+]
+
+[accounts]
+
+  [accounts.A1]
+  master = true
+  login = "YOUR_KUCOIN_FUTURES_API_KEY_GOES_HERE"
+  password = "YOUR_KUCOIN_FUTURES_PASSPHRASE_GOES_HERE"
+  secret = "YOUR_KUCOIN_FUTURES_SECRET_GOES_HERE"
+  symbols = [ ".*" ]
+
+[users]
+
+  [users.test]
+  password = "1234"
+  symbols = ".*"
+
+  [users.trader]
+  password = "secret"
+  accounts = [ "A1" ]
+  symbols = [ ".*BTC.*", ".*ETH.*" ]
+
+[rate_limits]
+
+  [rate_limits.global]
+    type = "ORDER_ACTION"
+    aggregate = true
+    request_limit = 100
+    monitor_period = "10s"
+    ban_period = "5m"
