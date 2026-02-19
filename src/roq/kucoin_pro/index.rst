@@ -1,4 +1,4 @@
-.. _roq-kucoin-futures:
+.. _roq-kucoin-pro:
 
 .. |dagger| unicode:: U+2020
 .. |double-dagger| unicode:: U+2021
@@ -13,8 +13,8 @@
 .. |footnote-3| unicode:: U+2778
 
 
-roq-kucoin-futures
-==================
+roq-kucoin-pro
+==============
 
 
 .. tab:: Unstable
@@ -23,7 +23,7 @@ roq-kucoin-futures
 
      $ conda install \
            --channel https://roq-trading.com/conda/unstable \
-           roq-kucoin-futures
+           roq-kucoin-pro
 
 .. tab:: Stable
 
@@ -31,7 +31,7 @@ roq-kucoin-futures
 
      $ conda install \
            --channel https://roq-trading.com/conda/stable \
-           roq-kucoin-futures
+           roq-kucoin-pro
 
 
 Supports
@@ -147,14 +147,14 @@ Using
    $ roq-bitget [FLAGS]
 
 
-.. _roq-kucoin-futures-flags:
+.. _roq-kucoin-pro-flags:
 
 Flags
 -----
 
 .. code-block:: shell
 
-   $ roq-kucoin-futures --help
+   $ roq-kucoin-pro --help
 
 .. tab:: Flags
 
@@ -188,45 +188,9 @@ Environments
 
    .. code-block:: shell
 
-      $ --flagfile $CONDA_PREFIX/share/roq-kucoin-futures/flags/prod/flags.cfg
+      $ --flagfile $CONDA_PREFIX/share/roq-kucoin-pro/flags/prod/flags.cfg
 
    .. include:: flags/prod/flags.cfg
-     :code: shell
-
-.. tab:: Test
-
-   .. code-block:: shell
-
-      $ --flagfile $CONDA_PREFIX/share/roq-kucoin-futures/flags/test/flags.cfg
-
-   .. include:: flags/test/flags.cfg
-     :code: shell
-
-.. tab:: Colo1
-
-   .. code-block:: shell
-
-      $ --flagfile $CONDA_PREFIX/share/roq-kucoin-futures/flags/colo1/flags.cfg
-
-   .. include:: flags/colo1/flags.cfg
-     :code: shell
-
-.. tab:: Colo2
-
-   .. code-block:: shell
-
-      $ --flagfile $CONDA_PREFIX/share/roq-kucoin-futures/flags/colo2/flags.cfg
-
-   .. include:: flags/colo2/flags.cfg
-     :code: shell
-
-.. tab:: Colo3
-
-   .. code-block:: shell
-
-      $ --flagfile $CONDA_PREFIX/share/roq-kucoin-futures/flags/colo3/flags.cfg
-
-   .. include:: flags/colo3/flags.cfg
      :code: shell
 
 
@@ -235,7 +199,7 @@ Configuration
 
 .. code-block:: shell
 
-   $ --config_file $CONDA_PREFIX/share/roq-kucoin-futures/config.toml
+   $ --config_file $CONDA_PREFIX/share/roq-kucoin-pro/config.toml
 
 .. important::
 
@@ -519,14 +483,6 @@ Outbound
 Comments
 --------
 
-* The default margin mode may have to be configured (flag) if not specified when creating orders.
-  This is due to Kucoin **always** defaulting to the :code:`isolated` margin mode.
-
-* No support for stop orders.
-  This is due to Roq not currently supporting a stop "direction".
-
-* Downloaded fills don't have the :code:`clientOid` field.
-  The implication is that we can't correctly persist historical fills.
 
 
 References
