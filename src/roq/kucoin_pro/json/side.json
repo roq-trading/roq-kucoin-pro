@@ -1,0 +1,12 @@
+{
+  "name": "roq/kucoin_pro/json/Side",
+  "type": "enum",
+  "values": [
+    {
+      "name": "buy"
+    },
+    {
+      "name": "sell"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "roq/kucoin_pro/json/WSPong",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "id",
+      "type": "std/string_view"
+    },
+    {
+      "name": "op",
+      "type": "roq/kucoin_pro/json/WSOp"
+    },
+    {
+      "name": "timestamp",
+      "type": "std/milliseconds"
+    }
+  ]
+}

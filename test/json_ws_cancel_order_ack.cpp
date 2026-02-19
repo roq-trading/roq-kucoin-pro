@@ -5,7 +5,7 @@
 #include "ws_parser_tester.hpp"
 
 using namespace roq;
-using namespace roq::kucoin_futures;
+using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 

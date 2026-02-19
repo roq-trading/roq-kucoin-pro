@@ -1,5 +1,5 @@
 package:
-  name: roq-kucoin-futures
+  name: roq-kucoin-pro
   version: {{ GIT_DESCRIBE_TAG }}
 
 source:
@@ -50,4 +50,4 @@ about:
   license: Commercial
   license_family: PROPRIETARY
   license_file: LICENSE
-  summary: Roq KuCoin Futures Gateway
+  summary: Roq KuCoin PRO Gateway

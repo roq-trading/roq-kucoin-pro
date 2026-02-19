@@ -2,10 +2,10 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/kucoin_futures/json/encoder.hpp"
+#include "roq/kucoin_pro/json/encoder.hpp"
 
 using namespace roq;
-using namespace roq::kucoin_futures;
+using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 using namespace std::chrono_literals;

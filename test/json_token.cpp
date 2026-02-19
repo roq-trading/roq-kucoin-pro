@@ -4,10 +4,10 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_futures/json/token.hpp"
+#include "roq/kucoin_pro/json/token.hpp"
 
 using namespace roq;
-using namespace roq::kucoin_futures;
+using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 using namespace std::chrono_literals;

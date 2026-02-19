@@ -1,0 +1,12 @@
+{
+  "name": "roq/kucoin_pro/json/OrderType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "market"
+    },
+    {
+      "name": "limit"
+    }
+  ]
+}

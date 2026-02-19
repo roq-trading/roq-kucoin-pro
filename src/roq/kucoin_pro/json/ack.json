@@ -1,0 +1,15 @@
+{
+  "name": "roq/kucoin_pro/json/Ack",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "type",
+      "type": "roq/kucoin_pro/json/Type"
+    },
+    {
+      "name": "id",
+      "type": "std/string_view",
+      "optional": true
+    }
+  ]
+}

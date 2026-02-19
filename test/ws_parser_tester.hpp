@@ -2,10 +2,10 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/kucoin_futures/json/ws_parser.hpp"
+#include "roq/kucoin_pro/json/ws_parser.hpp"
 
 namespace roq {
-namespace kucoin_futures {
+namespace kucoin_pro {
 
 template <typename T>
 struct WSParserTester final : public json::WSParser::Handler {
@@ -51,5 +51,5 @@ struct WSParserTester final : public json::WSParser::Handler {
   bool found_ = false;
 };
 
-}  // namespace kucoin_futures
+}  // namespace kucoin_pro
 }  // namespace roq

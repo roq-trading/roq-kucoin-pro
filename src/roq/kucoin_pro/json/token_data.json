@@ -1,0 +1,15 @@
+{
+  "name": "roq/kucoin_pro/json/TokenData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "instanceServers",
+      "type": "roq/kucoin_pro/json/InstanceServer",
+      "array": "std/span"
+    },
+    {
+      "name": "token",
+      "type": "std/string_view"
+    }
+  ]
+}

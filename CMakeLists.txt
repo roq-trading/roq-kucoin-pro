@@ -16,7 +16,7 @@ message("Using GIT_REPO_VERSION=${GIT_REPO_VERSION}")
 
 # project
 
-project(roq-kucoin-futures VERSION ${GIT_REPO_VERSION})
+project(roq-kucoin-pro VERSION ${GIT_REPO_VERSION})
 
 # language
 
@@ -82,7 +82,7 @@ include_directories(
 
 # sub-projects
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/roq/kucoin_futures)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/roq/kucoin_pro)
 
 if(BUILD_TESTING)
   add_subdirectory(${CMAKE_SOURCE_DIR}/test)

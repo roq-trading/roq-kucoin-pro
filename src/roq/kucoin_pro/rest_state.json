@@ -1,0 +1,15 @@
+{
+  "name": "roq/kucoin_pro/RestState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "public_token"
+    },
+    {
+      "name": "contracts"
+    },
+    {
+      "name": "done"
+    }
+  ]
+}

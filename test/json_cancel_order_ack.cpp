@@ -4,10 +4,10 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_futures/json/cancel_order_ack.hpp"
+#include "roq/kucoin_pro/json/cancel_order_ack.hpp"
 
 using namespace roq;
-using namespace roq::kucoin_futures;
+using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 

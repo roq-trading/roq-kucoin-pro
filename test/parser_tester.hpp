@@ -2,10 +2,10 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/kucoin_futures/json/parser.hpp"
+#include "roq/kucoin_pro/json/parser.hpp"
 
 namespace roq {
-namespace kucoin_futures {
+namespace kucoin_pro {
 
 template <typename T>
 struct ParserTester final : public json::Parser::Handler {
@@ -69,5 +69,5 @@ struct ParserTester final : public json::Parser::Handler {
   bool found_ = false;
 };
 
-}  // namespace kucoin_futures
+}  // namespace kucoin_pro
 }  // namespace roq
