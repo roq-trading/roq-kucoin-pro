@@ -265,6 +265,32 @@ std::optional<roq::TimeInForce> Map<kucoin_pro::json::TimeInForce>::helper() con
   return Helper{args_};
 }
 
+// kucoin_pro::json::TradeType => roq::SecurityType
+
+template <>
+template <>
+constexpr Helper<kucoin_pro::json::TradeType>::operator std::optional<roq::SecurityType>() const {
+  switch (std::get<0>(args_)) {
+    using enum kucoin_pro::json::TradeType::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::SecurityType::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::SecurityType::UNDEFINED;
+    case FUTURES:
+      return roq::SecurityType::SWAP;
+  }
+  return {};
+}
+
+static_assert(Helper{kucoin_pro::json::TradeType{kucoin_pro::json::TradeType::UNDEFINED_INTERNAL}} == roq::SecurityType::UNDEFINED);
+static_assert(Helper{kucoin_pro::json::TradeType{kucoin_pro::json::TradeType::FUTURES}} == roq::SecurityType::SWAP);
+
+template <>
+template <>
+std::optional<roq::SecurityType> Map<kucoin_pro::json::TradeType>::helper() const {
+  return Helper{args_};
+}
+
 // roq => kucoin_pro::json
 
 // roq::MarginMode ==> kucoin_pro::json::MarginMode

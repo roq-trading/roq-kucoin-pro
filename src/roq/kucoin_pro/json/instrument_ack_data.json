@@ -4,7 +4,7 @@
   "values": [
     {
       "name": "tradeType",
-      "type": "std/string_view"
+      "type": "roq/kucoin_pro/json/TradeType"
     },
     {
       "name": "list",

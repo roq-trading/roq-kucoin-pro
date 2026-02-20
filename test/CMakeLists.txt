@@ -3,33 +3,19 @@ include(RoqAutogen)
 set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
+    json_obu.cpp
+    json_trade.cpp
+    json_ticker.cpp
+    json_pong.cpp
     json_account_ack.cpp
     # json_add_order_ack.cpp
-    json_available_balance_change.cpp
     json_cancel_order_ack.cpp
     json_currency_ack.cpp
+    json_currencies_ack.cpp
     json_instrument_ack.cpp
     json_encoder.cpp
-    json_execution.cpp
-    json_fills_ack.cpp
-    json_funding_begin.cpp
-    json_funding_end.cpp
-    json_funding_rate.cpp
-    json_level2.cpp
-    json_mark_index_price.cpp
-    json_match.cpp
     json_order_book_ack.cpp
-    json_order_change.cpp
-    json_order_margin_change.cpp
-    json_orders_ack.cpp
-    json_position_adjust_risk_limit.cpp
-    json_position_change.cpp
-    json_positions_ack.cpp
-    json_position_settlement.cpp
-    json_snapshot24h.cpp
-    json_ticker_v2.cpp
-    json_wallet_balance_change.cpp
-    json_withdraw_hold_change.cpp
+    json_welcome.cpp
     json_ws_add_order_ack.cpp
     json_ws_cancel_order_ack.cpp
     json_ws_error.cpp

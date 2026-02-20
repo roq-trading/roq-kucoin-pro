@@ -3,13 +3,16 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "type",
-      "type": "roq/kucoin_pro/json/Type"
+      "name": "sessionId",
+      "type": "std/string_view"
     },
     {
-      "name": "id",
-      "type": "std/string_view",
-      "optional": true
+      "name": "message",
+      "type": "std/string_view"
+    },
+    {
+      "name": "pingInterval",
+      "type": "std/int32"
     }
   ]
 }

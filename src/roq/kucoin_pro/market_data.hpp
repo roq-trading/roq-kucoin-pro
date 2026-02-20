@@ -40,15 +40,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
-  MarketData(
-      Handler &,
-      io::Context &,
-      uint16_t stream_id,
-      Shared &,
-      size_t index,
-      std::string_view const &uri,
-      std::string_view const &query,
-      std::chrono::nanoseconds ping_frequency);
+  MarketData(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
   MarketData(MarketData const &) = delete;
 
@@ -72,8 +64,6 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   void operator()(web::socket::Client::Latency const &) override;
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
-  //
-  std::string_view get_query() const override { return query_; }
 
  private:
   void operator()(ConnectionStatus);
@@ -81,6 +71,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   void subscribe(std::span<Symbol const> const &symbols);
 
   void subscribe(std::string_view const &topic, std::span<Symbol const> const &symbols);
+  void subscribe(std::string_view const &topic, std::span<Symbol const> const &symbols, std::string_view const &depth);
 
   void send_ping(std::chrono::nanoseconds now);
 
@@ -91,25 +82,9 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   void operator()(Trace<json::Pong> const &) override;
   void operator()(Trace<json::Ack> const &) override;
 
-  void operator()(Trace<json::TickerV2> const &) override;
-  void operator()(Trace<json::Match> const &) override;
-  void operator()(Trace<json::Execution> const &) override;
-  void operator()(Trace<json::MarkIndexPrice> const &) override;
-  void operator()(Trace<json::FundingRate> const &) override;
-  void operator()(Trace<json::Level2> const &) override;
-  void operator()(Trace<json::FundingBegin> const &) override;
-  void operator()(Trace<json::FundingEnd> const &) override;
-  void operator()(Trace<json::Snapshot24h> const &) override;
-
-  void operator()(Trace<json::WalletBalanceChange> const &) override;
-  void operator()(Trace<json::OrderMarginChange> const &) override;
-  void operator()(Trace<json::AvailableBalanceChange> const &) override;
-  void operator()(Trace<json::WithdrawHoldChange> const &) override;
-  void operator()(Trace<json::PositionChange> const &) override;
-  void operator()(Trace<json::PositionSettlement> const &) override;
-  void operator()(Trace<json::PositionAdjustRiskLimit> const &) override;
-  void operator()(Trace<json::SymbolOrderChange> const &) override;
-  void operator()(Trace<json::OrderChange> const &) override;
+  void operator()(Trace<json::Ticker> const &) override;
+  void operator()(Trace<json::Trade> const &) override;
+  void operator()(Trace<json::OBU> const &) override;
 
   void check_subscribe_queue(std::chrono::nanoseconds now);
 
@@ -119,9 +94,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   uint16_t const stream_id_;
   std::string const name_;
   size_t const index_;
-  std::chrono::nanoseconds const ping_frequency_;
   // web socket
-  std::string query_;
   std::unique_ptr<web::socket::Client> const connection_;
   // buffers
   core::json::BufferStack decode_buffer_;
@@ -130,8 +103,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
     utils::metrics::Counter disconnect, total_bytes_received;
   } counter_;
   struct {
-    utils::metrics::Profile parse, welcome, error, pong, ack, ticker_v2, ticker, match, execution, mark_index_price, funding_rate, level2, funding_begin,
-        funding_end, snapshot_24h;
+    utils::metrics::Profile parse, welcome, error, pong, ack, ticker, trade, obu;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;

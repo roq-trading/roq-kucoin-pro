@@ -11,6 +11,7 @@ namespace kucoin_pro {
 
 struct API final {
   struct {
+    std::string_view asset_currencies;
     std::string_view market_currency;
     std::string_view market_instrument;
     std::string_view market_orderbook;
@@ -29,11 +30,8 @@ struct API final {
   // ws
   // -- public
   std::string_view ticker;
-  std::string_view execution;
-  std::string_view instrument;
-  std::string_view snapshot;
-  std::string_view announcement;
-  std::string_view level2;
+  std::string_view trade;
+  std::string_view obu;
   // -- account
   std::string_view get_balance;
   std::string_view get_account;

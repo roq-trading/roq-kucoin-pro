@@ -154,15 +154,7 @@ void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
 void Gateway::operator()(Trace<PositionUpdate> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }
-/*
-void Gateway::operator()(Rest::PublicToken const &public_token) {
-  log::debug(R"(uri="{}", query="{}", ping_frequency={})"sv, public_token.uri, public_token.query, public_token.ping_frequency);
-  public_ws_uri_ = public_token.uri;
-  public_ws_query_ = public_token.query;
-  public_ws_ping_frequency_ = public_token.ping_frequency;
-  // note! could create first MarketData here, but this message will always arrive first
-}
-*/
+
 void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
   auto [size, start_from] = shared_.symbols(symbols_update.symbols);
   ensure_symbol_slices(size);
@@ -176,7 +168,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(market_data_);
     log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index, public_ws_uri_, public_ws_query_, public_ws_ping_frequency_);
+    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*market_data, message_info, start);

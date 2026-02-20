@@ -1,9 +1,0 @@
-{
-  "name": "roq/kucoin_pro/json/MarkMethod",
-  "type": "enum",
-  "values": [
-    {
-      "name": "FairPrice"
-    }
-  ]
-}

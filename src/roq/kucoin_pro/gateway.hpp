@@ -114,10 +114,6 @@ struct Gateway final : public server::Handler,
   utils::unordered_map<std::string, std::unique_ptr<OrderEntryWS>> order_entry_ws_;
   utils::unordered_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
-  // websocket uri's
-  std::string public_ws_uri_;
-  std::string public_ws_query_;
-  std::chrono::nanoseconds public_ws_ping_frequency_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;
 };

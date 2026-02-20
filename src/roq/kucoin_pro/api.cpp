@@ -14,6 +14,7 @@ namespace kucoin_pro {
 API API::create(Settings const &) {
   return {
       .rest_public{
+          .asset_currencies = "/api/ua/v1/asset/currencies"sv,
           .market_currency = "/api/ua/v1/market/currency"sv,
           .market_instrument = "/api/ua/v1/market/instrument"sv,
           .market_orderbook = "/api/ua/v1/market/orderbook"sv,
@@ -31,12 +32,9 @@ API API::create(Settings const &) {
       },
       // ws
       // -- public
-      .ticker = "/contractMarket/tickerV2"sv,
-      .execution = "/contractMarket/execution"sv,
-      .instrument = "/contract/instrument"sv,
-      .snapshot = "/contractMarket/snapshot"sv,
-      .announcement = "/contract/announcement"sv,
-      .level2 = "/contractMarket/level2"sv,
+      .ticker = "ticker"sv,
+      .trade = "trade"sv,
+      .obu = "obu"sv,
       // account
       .get_balance = "/fapi/v2/balance"sv,
       .get_account = "/fapi/v2/account"sv,

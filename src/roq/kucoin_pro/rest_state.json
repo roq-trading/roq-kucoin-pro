@@ -3,7 +3,7 @@
   "type": "enum",
   "values": [
     {
-      "name": "currency"
+      "name": "currencies"
     },
     {
       "name": "instrument"

@@ -25,7 +25,7 @@
 #include "roq/kucoin_pro/rest_state.hpp"
 #include "roq/kucoin_pro/shared.hpp"
 
-#include "roq/kucoin_pro/json/currency_ack.hpp"
+#include "roq/kucoin_pro/json/currencies_ack.hpp"
 #include "roq/kucoin_pro/json/instrument_ack.hpp"
 #include "roq/kucoin_pro/json/order_book_ack.hpp"
 
@@ -76,11 +76,11 @@ struct Rest final : public web::rest::Client::Handler {
 
   uint32_t download(RestState);
 
-  // currency
+  // currencies
 
-  void get_currency();
-  void get_currency_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::CurrencyAck> const &);
+  void get_currencies();
+  void get_currencies_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void operator()(Trace<json::CurrenciesAck> const &);
 
   // instrument
 
@@ -114,7 +114,7 @@ struct Rest final : public web::rest::Client::Handler {
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile currency, currency_ack,  //
+    utils::metrics::Profile currencies, currencies_ack,  //
         instrument, instrument_ack, order_book, order_book_ack;
   } profile_;
   struct {

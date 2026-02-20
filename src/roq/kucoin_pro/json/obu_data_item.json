@@ -1,0 +1,14 @@
+{
+  "name": "roq/kucoin_pro/json/OBUDataItem",
+  "type": "by_index",
+  "values": [
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "quantity",
+      "type": "std/double"
+    }
+  ]
+}

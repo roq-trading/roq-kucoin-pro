@@ -34,25 +34,9 @@ struct ParserTester final : public json::Parser::Handler {
   void operator()(Trace<json::Pong> const &event) override { dispatch(event); }
   void operator()(Trace<json::Ack> const &event) override { dispatch(event); }
 
-  void operator()(Trace<json::TickerV2> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Match> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Execution> const &event) override { dispatch(event); }
-  void operator()(Trace<json::MarkIndexPrice> const &event) override { dispatch(event); }
-  void operator()(Trace<json::FundingRate> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Level2> const &event) override { dispatch(event); }
-  void operator()(Trace<json::FundingBegin> const &event) override { dispatch(event); }
-  void operator()(Trace<json::FundingEnd> const &event) override { dispatch(event); }
-  void operator()(Trace<json::Snapshot24h> const &event) override { dispatch(event); }
-
-  void operator()(Trace<json::WalletBalanceChange> const &event) override { dispatch(event); }
-  void operator()(Trace<json::OrderMarginChange> const &event) override { dispatch(event); }
-  void operator()(Trace<json::AvailableBalanceChange> const &event) override { dispatch(event); }
-  void operator()(Trace<json::WithdrawHoldChange> const &event) override { dispatch(event); }
-  void operator()(Trace<json::PositionChange> const &event) override { dispatch(event); }
-  void operator()(Trace<json::PositionSettlement> const &event) override { dispatch(event); }
-  void operator()(Trace<json::PositionAdjustRiskLimit> const &event) override { dispatch(event); }
-  void operator()(Trace<json::SymbolOrderChange> const &event) override { dispatch(event); }
-  void operator()(Trace<json::OrderChange> const &event) override { dispatch(event); }
+  void operator()(Trace<json::Ticker> const &event) override { dispatch(event); }
+  void operator()(Trace<json::Trade> const &event) override { dispatch(event); }
+  void operator()(Trace<json::OBU> const &event) override { dispatch(event); }
 
   template <typename U>
   void dispatch(Trace<U> const &event) {

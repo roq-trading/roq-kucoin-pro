@@ -1,0 +1,45 @@
+{
+  "name": "roq/kucoin_pro/json/TradeData",
+  "type": "dictionary",
+  "values": [
+    {
+      "raw": "s",
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "raw": "E",
+      "name": "sequence_number",
+      "type": "std/uint64"
+    },
+    {
+      "raw": "ti",
+      "name": "trade_id",
+      "type": "std/string_view"
+    },
+    {
+      "raw": "p",
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "raw": "S",
+      "name": "side",
+      "type": "roq/kucoin_pro/json/Side"
+    },
+    {
+      "raw": "q",
+      "name": "quantity",
+      "type": "std/double"
+    },
+    {
+      "name": "rpi",
+      "type": "std/bool"
+    },
+    {
+      "raw": "M",
+      "name": "timestamp",
+      "type": "std/nanoseconds"
+    }
+  ]
+}

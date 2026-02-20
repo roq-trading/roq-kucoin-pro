@@ -12,6 +12,7 @@
 
 #include "roq/utils/metrics/factory.hpp"
 
+#include "roq/kucoin_pro/json/map.hpp"
 #include "roq/kucoin_pro/json/utils.hpp"
 
 #include "roq/kucoin_pro/tools/splitter.hpp"
@@ -28,15 +29,11 @@ auto const NAME = "rest"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::REFERENCE_DATA,
-    SupportType::MARKET_STATUS,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 2;
 
 int32_t const SYSTEM_CODE_SUCCESS = 200000;
-
-auto const CFI_CODE_SWAP = "FFWCSX"sv;
-auto const CFI_CODE_FUTURES = "FFICSX"sv;
 }  // namespace
 
 // === HELPERS ===
@@ -90,8 +87,8 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
       profile_{
-          .currency = create_metrics(shared.settings, name_, "currency"sv),
-          .currency_ack = create_metrics(shared.settings, name_, "currency_ack"sv),
+          .currencies = create_metrics(shared.settings, name_, "currencies"sv),
+          .currencies_ack = create_metrics(shared.settings, name_, "currencies_ack"sv),
           .instrument = create_metrics(shared.settings, name_, "instrument"sv),
           .instrument_ack = create_metrics(shared.settings, name_, "instrument_ack"sv),
           .order_book = create_metrics(shared.settings, name_, "order_book"sv),
@@ -124,8 +121,8 @@ void Rest::operator()(metrics::Writer &writer) const {
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
       // profile
-      .write(profile_.currency, metrics::Type::PROFILE)
-      .write(profile_.currency_ack, metrics::Type::PROFILE)
+      .write(profile_.currencies, metrics::Type::PROFILE)
+      .write(profile_.currencies_ack, metrics::Type::PROFILE)
       .write(profile_.instrument, metrics::Type::PROFILE)
       .write(profile_.instrument_ack, metrics::Type::PROFILE)
       .write(profile_.order_book, metrics::Type::PROFILE)
@@ -190,8 +187,8 @@ uint32_t Rest::download(RestState state) {
     case UNDEFINED:
       assert(false);
       break;
-    case CURRENCY:
-      get_currency();
+    case CURRENCIES:
+      get_currencies();
       return 1;
     case INSTRUMENT:
       get_instrument();
@@ -204,13 +201,13 @@ uint32_t Rest::download(RestState state) {
   return 0;
 }
 
-// currency
+// currencies
 
-void Rest::get_currency() {
-  profile_.currency([&]() {
+void Rest::get_currencies() {
+  profile_.currencies([&]() {
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = shared_.api.rest_public.market_currency,
+        .path = shared_.api.rest_public.asset_currencies,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -221,31 +218,30 @@ void Rest::get_currency() {
     auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
-      get_currency_ack(event, sequence);
+      get_currencies_ack(event, sequence);
     };
-    (*connection_)("currency"sv, request, callback);
+    (*connection_)("currencies"sv, request, callback);
   });
 }
 
-void Rest::get_currency_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  auto const STATE = RestState::CURRENCY;
-  profile_.currency_ack([&]() {
+void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
+  auto const STATE = RestState::CURRENCIES;
+  profile_.currencies_ack([&]() {
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::CurrencyAck currency_ack{body, decode_buffer_};
-        if (currency_ack.code == SYSTEM_CODE_SUCCESS) {
-          Trace event_2{event, currency_ack};
+        json::CurrenciesAck currencies_ack{body, decode_buffer_};
+        if (currencies_ack.code == SYSTEM_CODE_SUCCESS) {
+          Trace event_2{event, currencies_ack};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(currency_ack.code), currency_ack.msg);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(currencies_ack.code), currencies_ack.msg);
         }
       }
     };
@@ -253,108 +249,11 @@ void Rest::get_currency_ack(Trace<web::rest::Response> const &event, uint32_t se
   });
 }
 
-void Rest::operator()(Trace<json::CurrencyAck> const &event) {
-  auto &[trace_info, currency_ack] = event;
-  log::info<4>("currency_ack={}"sv, currency_ack);
-  /*
-  // reference data
-  std::vector<Symbol> symbols;
-  size_t counter = 0;
-  for (auto &item : currency_ack.data) {
-    log::info<2>("item={}"sv, item);
-    auto &symbol = item.symbol;
-    auto security_type = [&]() -> SecurityType {
-      if (item.type == CFI_CODE_SWAP) {
-        return SecurityType::SWAP;
-      }
-      if (item.type == CFI_CODE_FUTURES) {
-        return SecurityType::FUTURES;
-      }
-      return {};
-    }();
-    auto discard = shared_.discard_symbol(symbol);
-    auto reference_data = ReferenceData{
-        .stream_id = stream_id_,
-        .exchange = shared_.settings.exchange,
-        .symbol = symbol,
-        .description = {},
-        .security_type = security_type,
-        .external_security_id = {},
-        .cfi_code = item.type,
-        .base_currency = item.base_currency,
-        .quote_currency = item.quote_currency,
-        .settlement_currency = item.settle_currency,
-        .margin_currency = {},
-        .commission_currency = {},
-        .tick_size = item.tick_size,
-        .tick_size_steps = {},
-        .multiplier = item.multiplier,
-        .min_notional = NaN,
-        .min_trade_vol = item.lot_size,
-        .max_trade_vol = item.max_order_qty,
-        .trade_vol_step_size = item.lot_size,
-        .option_type = {},
-        .strike_currency = {},
-        .strike_price = NaN,
-        .underlying = item.root_symbol,
-        .time_zone = {},
-        .issue_date = utils::safe_cast(item.first_open_date),
-        .settlement_date = utils::safe_cast(item.settle_date),
-        .expiry_datetime = utils::safe_cast(item.expire_date),
-        .expiry_datetime_utc = utils::safe_cast(item.expire_date),
-        .exchange_time_utc = {},
-        .exchange_sequence = {},
-        .sending_time_utc = {},
-        .discard = discard,
-    };
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-    if (discard) {
-      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
-      continue;
-    }
-    if (shared_.all_symbols.emplace(symbol).second) {  // only include new
-      symbols.emplace_back(symbol);
-    }
-    ++counter;
+void Rest::operator()(Trace<json::CurrenciesAck> const &event) {
+  auto &[trace_info, currencies_ack] = event;
+  log::info<4>("currencies_ack={}"sv, currencies_ack);
+  for (auto &item : currencies_ack.data) {
   }
-  if (!std::empty(symbols)) {
-    auto symbols_update = SymbolsUpdate{
-        .symbols = symbols,
-    };
-    handler_(symbols_update);
-  }
-  if (counter > 0) {
-    log::info("Contracts {} / {}"sv, counter, std::size(currency_ack.data));
-  }
-  // market status
-  for (auto &item : currency_ack.data) {
-    auto &symbol = item.symbol;
-    if (shared_.all_symbols.find(symbol) == std::end(shared_.all_symbols)) {
-      continue;
-    }
-    auto trading_status = [&]() -> TradingStatus {
-      switch (item.status) {
-        using enum json::Status::type_t;
-        case UNDEFINED_INTERNAL:
-        case UNKNOWN_INTERNAL:
-          break;
-        case OPEN:
-          return TradingStatus::OPEN;
-      }
-      return {};
-    }();
-    auto market_status = MarketStatus{
-        .stream_id = stream_id_,
-        .exchange = shared_.settings.exchange,
-        .symbol = symbol,
-        .trading_status = trading_status,
-        .exchange_time_utc = {},
-        .exchange_sequence = {},
-        .sending_time_utc = {},
-    };
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
-  }
-  */
 }
 
 // instrument
@@ -389,7 +288,6 @@ void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t 
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
@@ -410,52 +308,41 @@ void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t 
 void Rest::operator()(Trace<json::InstrumentAck> const &event) {
   auto &[trace_info, instrument_ack] = event;
   log::info<4>("instrument_ack={}"sv, instrument_ack);
-  /*
-  // reference data
-  std::vector<Symbol> instrument;
+  std::vector<Symbol> symbols;
   size_t counter = 0;
-  for (auto &item : instrument_ack.data) {
+  for (auto &item : instrument_ack.data.list) {
     log::info<2>("item={}"sv, item);
-    auto &instrument = item.instrument;
-    auto security_type = [&]() -> SecurityType {
-      if (item.type == CFI_CODE_SWAP) {
-        return SecurityType::SWAP;
-      }
-      if (item.type == CFI_CODE_FUTURES) {
-        return SecurityType::FUTURES;
-      }
-      return {};
-    }();
-    auto discard = shared_.discard_instrument(instrument);
+    auto discard = shared_.discard_symbol(item.symbol);
+    auto security_type = map(instrument_ack.data.trade_type).template get<SecurityType>();
     auto reference_data = ReferenceData{
         .stream_id = stream_id_,
         .exchange = shared_.settings.exchange,
-        .instrument = instrument,
+        .symbol = item.symbol,
         .description = {},
         .security_type = security_type,
         .external_security_id = {},
-        .cfi_code = item.type,
+        .cfi_code = {},
         .base_currency = item.base_currency,
         .quote_currency = item.quote_currency,
-        .settlement_currency = item.settle_currency,
+        .settlement_currency = {},  // XXX isInverse
         .margin_currency = {},
         .commission_currency = {},
         .tick_size = item.tick_size,
         .tick_size_steps = {},
-        .multiplier = item.multiplier,
+        .multiplier = NaN,
         .min_notional = NaN,
         .min_trade_vol = item.lot_size,
-        .max_trade_vol = item.max_order_qty,
+        .max_trade_vol = item.max_base_order_size,
         .trade_vol_step_size = item.lot_size,
         .option_type = {},
         .strike_currency = {},
         .strike_price = NaN,
-        .underlying = item.root_instrument,
+        .underlying = {},
         .time_zone = {},
-        .issue_date = utils::safe_cast(item.first_open_date),
-        .settlement_date = utils::safe_cast(item.settle_date),
-        .expiry_datetime = utils::safe_cast(item.expire_date),
-        .expiry_datetime_utc = utils::safe_cast(item.expire_date),
+        .issue_date = utils::safe_cast(item.launch_time),
+        .settlement_date = utils::safe_cast(item.settlement_time),
+        .expiry_datetime = {},
+        .expiry_datetime_utc = utils::safe_cast(item.expiry_time),
         .exchange_time_utc = {},
         .exchange_sequence = {},
         .sending_time_utc = {},
@@ -463,52 +350,24 @@ void Rest::operator()(Trace<json::InstrumentAck> const &event) {
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
     if (discard) {
-      log::info<1>(R"(Drop instrument="{}")"sv, item.instrument);
+      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
-    if (shared_.all_instrument.emplace(instrument).second) {  // only include new
-      instrument.emplace_back(instrument);
+    if (shared_.all_symbols.emplace(item.symbol).second) {  // only include new
+      symbols.emplace_back(item.symbol);
     }
     ++counter;
   }
-  if (!std::empty(instrument)) {
-    auto instrument_update = SymbolsUpdate{
-        .instrument = instrument,
+  if (!std::empty(symbols)) {
+    auto symbols_update = SymbolsUpdate{
+        .symbols = symbols,
     };
-    handler_(instrument_update);
+    handler_(symbols_update);
   }
   if (counter > 0) {
-    log::info("Contracts {} / {}"sv, counter, std::size(instrument_ack.data));
+    log::info("Contracts {} / {}"sv, counter, std::size(instrument_ack.data.list));
   }
-  // market status
-  for (auto &item : instrument_ack.data) {
-    auto &instrument = item.instrument;
-    if (shared_.all_instrument.find(instrument) == std::end(shared_.all_instrument)) {
-      continue;
-    }
-    auto trading_status = [&]() -> TradingStatus {
-      switch (item.status) {
-        using enum json::Status::type_t;
-        case UNDEFINED_INTERNAL:
-        case UNKNOWN_INTERNAL:
-          break;
-        case OPEN:
-          return TradingStatus::OPEN;
-      }
-      return {};
-    }();
-    auto market_status = MarketStatus{
-        .stream_id = stream_id_,
-        .exchange = shared_.settings.exchange,
-        .instrument = instrument,
-        .trading_status = trading_status,
-        .exchange_time_utc = {},
-        .exchange_sequence = {},
-        .sending_time_utc = {},
-    };
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
-  }
-  */
+  // XXX trading_status
 }
 
 // order-book

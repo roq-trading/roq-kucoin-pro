@@ -24,15 +24,15 @@
     },
     {
       "name": "maxBaseOrderSize",
-      "type": "std/string_view"
+      "type": "std/double"
     },
     {
       "name": "tickSize",
-      "type": "std/string_view"
+      "type": "std/double"
     },
     {
       "name": "tradingStatus",
-      "type": "std/string_view"
+      "type": "std/int32"
     },
     {
       "name": "settlementCurrency",

@@ -11,8 +11,8 @@
       "type": "std/string_view"
     },
     {
-      "name": "timestamp",
-      "type": "std/microseconds"
+      "name": "ts",
+      "type": "std/nanoseconds"
     }
   ]
 }

@@ -9,6 +9,7 @@
 #include "roq/order_status.hpp"
 #include "roq/order_type.hpp"
 #include "roq/position_effect.hpp"
+#include "roq/security_type.hpp"
 #include "roq/side.hpp"
 #include "roq/time_in_force.hpp"
 
@@ -19,6 +20,7 @@
 #include "roq/kucoin_pro/json/position_side.hpp"
 #include "roq/kucoin_pro/json/side.hpp"
 #include "roq/kucoin_pro/json/time_in_force.hpp"
+#include "roq/kucoin_pro/json/trade_type.hpp"
 
 namespace roq {
 
@@ -49,6 +51,10 @@ std::optional<Side> Map<kucoin_pro::json::Side>::helper() const;
 template <>
 template <>
 std::optional<TimeInForce> Map<kucoin_pro::json::TimeInForce>::helper() const;
+
+template <>
+template <>
+std::optional<SecurityType> Map<kucoin_pro::json::TradeType>::helper() const;
 
 // ===
 

@@ -3,19 +3,7 @@
   "type": "enum",
   "values": [
     {
-      "name": "trade"
-    },
-    {
-      "name": "cancel"
-    },
-    {
-      "name": "liquid"
-    },
-    {
-      "name": "adl"
-    },
-    {
-      "name": "settlement"
+      "name": "FUTURES"
     }
   ]
 }
