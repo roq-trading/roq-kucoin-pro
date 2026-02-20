@@ -14,19 +14,20 @@ namespace kucoin_pro {
 API API::create(Settings const &) {
   return {
       .rest_public{
-          .bullet_public = "/api/v1/bullet-public"sv,
-          .contracts_active = "/api/v1/contracts/active"sv,
-          .level2_snapshot = "/api/v1/level2/snapshot"sv,
+          .market_currency = "/api/ua/v1/market/currency"sv,
+          .market_instrument = "/api/ua/v1/market/instrument"sv,
+          .market_orderbook = "/api/ua/v1/market/orderbook"sv,
+          .server_status = "/api/ua/v1/server/status"sv,
       },
       .rest_private{
-          .bullet_private = "/api/v1/bullet-private"sv,
-          .get_account_list = "/api/v1/account-overview"sv,
-          .get_position_list = "/api/v1/positions"sv,
-          .get_order_list = "/api/v1/orders"sv,
-          .get_recent_fills = "/api/v1/recentFills"sv,
-          .add_order = "/api/v1/orders"sv,
-          .cancel_order = "/api/v1/orders"sv,
-          .cancel_all_orders = "/api/v3/orders"sv,
+          .account_mode = "/api/ua/v1/account/mode"sv,
+          .account_balance = "/api/ua/v1/unified/account/balance"sv,
+          .position_open_list = "/api/ua/v1/unified/position/open-list"sv,
+          .order_open_list = "/api/ua/v1/unified/order/open-list"sv,
+          .order_execution = "/api/ua/v1/unified/order/execution"sv,
+          .order_place = "/api/ua/v1/unified/order/place"sv,
+          .order_cancel = "/api/ua/v1/unified/order/cancel"sv,
+          .order_cancel_all = "api/ua/v1/unified/order/cancel-all"sv,
       },
       // ws
       // -- public

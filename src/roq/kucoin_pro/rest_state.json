@@ -3,10 +3,10 @@
   "type": "enum",
   "values": [
     {
-      "name": "public_token"
+      "name": "currency"
     },
     {
-      "name": "contracts"
+      "name": "instrument"
     },
     {
       "name": "done"

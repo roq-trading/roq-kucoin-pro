@@ -1,5 +1,5 @@
 {
-  "name": "roq/kucoin_pro/json/ContractsAck",
+  "name": "roq/kucoin_pro/json/InstrumentAck",
   "type": "dictionary",
   "values": [
     {
@@ -13,8 +13,7 @@
     },
     {
       "name": "data",
-      "type": "roq/kucoin_pro/json/ContractsAckDataItem",
-      "array": "std/span"
+      "type": "roq/kucoin_pro/json/InstrumentAckData"
     }
   ]
 }

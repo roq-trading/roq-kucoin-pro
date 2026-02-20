@@ -31,7 +31,7 @@ auto const SUPPORTS = Mask{
     SupportType::MARKET_STATUS,
 };
 
-size_t const MAX_DECODE_BUFFER_DEPTH = 1;
+size_t const MAX_DECODE_BUFFER_DEPTH = 2;
 
 int32_t const SYSTEM_CODE_SUCCESS = 200000;
 
@@ -90,10 +90,10 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
       profile_{
-          .public_token = create_metrics(shared.settings, name_, "public_token"sv),
-          .public_token_ack = create_metrics(shared.settings, name_, "public_token_ack"sv),
-          .contracts = create_metrics(shared.settings, name_, "contracts"sv),
-          .contracts_ack = create_metrics(shared.settings, name_, "contracts_ack"sv),
+          .currency = create_metrics(shared.settings, name_, "currency"sv),
+          .currency_ack = create_metrics(shared.settings, name_, "currency_ack"sv),
+          .instrument = create_metrics(shared.settings, name_, "instrument"sv),
+          .instrument_ack = create_metrics(shared.settings, name_, "instrument_ack"sv),
           .order_book = create_metrics(shared.settings, name_, "order_book"sv),
           .order_book_ack = create_metrics(shared.settings, name_, "order_book_ack"sv),
       },
@@ -124,10 +124,10 @@ void Rest::operator()(metrics::Writer &writer) const {
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
       // profile
-      .write(profile_.public_token, metrics::Type::PROFILE)
-      .write(profile_.public_token_ack, metrics::Type::PROFILE)
-      .write(profile_.contracts, metrics::Type::PROFILE)
-      .write(profile_.contracts_ack, metrics::Type::PROFILE)
+      .write(profile_.currency, metrics::Type::PROFILE)
+      .write(profile_.currency_ack, metrics::Type::PROFILE)
+      .write(profile_.instrument, metrics::Type::PROFILE)
+      .write(profile_.instrument_ack, metrics::Type::PROFILE)
       .write(profile_.order_book, metrics::Type::PROFILE)
       .write(profile_.order_book_ack, metrics::Type::PROFILE)
       // latency
@@ -190,11 +190,11 @@ uint32_t Rest::download(RestState state) {
     case UNDEFINED:
       assert(false);
       break;
-    case PUBLIC_TOKEN:
-      get_public_token();
+    case CURRENCY:
+      get_currency();
       return 1;
-    case CONTRACTS:
-      get_contracts();
+    case INSTRUMENT:
+      get_instrument();
       return 1;
     case DONE:
       (*this)(ConnectionStatus::READY);
@@ -204,80 +204,13 @@ uint32_t Rest::download(RestState state) {
   return 0;
 }
 
-// bullet-public
+// currency
 
-void Rest::get_public_token() {
-  profile_.public_token([&]() {
-    auto request = web::rest::Request{
-        .method = web::http::Method::POST,
-        .path = shared_.api.rest_public.bullet_public,
-        .query = {},
-        .accept = web::http::Accept::APPLICATION_JSON,
-        .content_type = {},
-        .headers = {},
-        .body = {},
-        .quality_of_service = {},
-    };
-    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_public_token_ack(event, sequence);
-    };
-    (*connection_)("public_token"sv, request, callback);
-  });
-}
-
-void Rest::get_public_token_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  auto const STATE = RestState::PUBLIC_TOKEN;
-  profile_.public_token_ack([&]() {
-    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
-      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      download_.retry(STATE);
-    };
-    auto handle_success = [&](auto &body) {
-      if (download_.skip(sequence, STATE)) {
-        log::info("Download state={} has already been processed"sv, STATE);
-      } else {
-        json::Token token{body, decode_buffer_};
-        if (token.code == SYSTEM_CODE_SUCCESS) {
-          Trace event_2{event, token};
-          (*this)(event_2);
-          download_.check(STATE);
-        } else {
-          log::fatal("Unexpected: token={}"sv, token);
-        }
-      }
-    };
-    process_response(event, handle_error, handle_success);
-  });
-}
-
-void Rest::operator()(Trace<json::Token> const &event) {
-  auto &[trace_info, token] = event;
-  log::info<2>("token={}"sv, token);
-  if (std::empty(token.data.instance_servers)) {
-    log::fatal("Unexpected: no instance servers"sv);
-  }
-  auto &instance_server = token.data.instance_servers[0];
-  auto query = fmt::format("?token={}"sv, token.data.token);
-  auto public_token = PublicToken{
-      .uri = instance_server.endpoint,
-      .query = query,
-      .ping_frequency = instance_server.ping_interval,
-  };
-  if (public_token.ping_frequency.count() == 0) {
-    log::fatal("Unexpected: ping_interval={}"sv, instance_server.ping_interval);
-  }
-  handler_(public_token);
-}
-
-// contracts
-
-void Rest::get_contracts() {
-  profile_.contracts([&]() {
+void Rest::get_currency() {
+  profile_.currency([&]() {
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = shared_.api.rest_public.contracts_active,
+        .path = shared_.api.rest_public.market_currency,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -288,30 +221,31 @@ void Rest::get_contracts() {
     auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
-      get_contracts_ack(event, sequence);
+      get_currency_ack(event, sequence);
     };
-    (*connection_)("contracts"sv, request, callback);
+    (*connection_)("currency"sv, request, callback);
   });
 }
 
-void Rest::get_contracts_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  auto const STATE = RestState::CONTRACTS;
-  profile_.contracts_ack([&]() {
+void Rest::get_currency_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
+  auto const STATE = RestState::CURRENCY;
+  profile_.currency_ack([&]() {
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
+      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::ContractsAck contracts_ack{body, decode_buffer_};
-        if (contracts_ack.code == SYSTEM_CODE_SUCCESS) {
-          Trace event_2{event, contracts_ack};
+        json::CurrencyAck currency_ack{body, decode_buffer_};
+        if (currency_ack.code == SYSTEM_CODE_SUCCESS) {
+          Trace event_2{event, currency_ack};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(contracts_ack.code), contracts_ack.msg);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(currency_ack.code), currency_ack.msg);
         }
       }
     };
@@ -319,13 +253,14 @@ void Rest::get_contracts_ack(Trace<web::rest::Response> const &event, uint32_t s
   });
 }
 
-void Rest::operator()(Trace<json::ContractsAck> const &event) {
-  auto &[trace_info, contracts_ack] = event;
-  log::info<4>("contracts_ack={}"sv, contracts_ack);
+void Rest::operator()(Trace<json::CurrencyAck> const &event) {
+  auto &[trace_info, currency_ack] = event;
+  log::info<4>("currency_ack={}"sv, currency_ack);
+  /*
   // reference data
   std::vector<Symbol> symbols;
   size_t counter = 0;
-  for (auto &item : contracts_ack.data) {
+  for (auto &item : currency_ack.data) {
     log::info<2>("item={}"sv, item);
     auto &symbol = item.symbol;
     auto security_type = [&]() -> SecurityType {
@@ -389,10 +324,10 @@ void Rest::operator()(Trace<json::ContractsAck> const &event) {
     handler_(symbols_update);
   }
   if (counter > 0) {
-    log::info("Contracts {} / {}"sv, counter, std::size(contracts_ack.data));
+    log::info("Contracts {} / {}"sv, counter, std::size(currency_ack.data));
   }
   // market status
-  for (auto &item : contracts_ack.data) {
+  for (auto &item : currency_ack.data) {
     auto &symbol = item.symbol;
     if (shared_.all_symbols.find(symbol) == std::end(shared_.all_symbols)) {
       continue;
@@ -419,6 +354,161 @@ void Rest::operator()(Trace<json::ContractsAck> const &event) {
     };
     create_trace_and_dispatch(handler_, trace_info, market_status, true);
   }
+  */
+}
+
+// instrument
+
+void Rest::get_instrument() {
+  profile_.instrument([&]() {
+    auto query = "?tradeType=FUTURES"sv;
+    auto request = web::rest::Request{
+        .method = web::http::Method::GET,
+        .path = shared_.api.rest_public.market_instrument,
+        .query = query,
+        .accept = web::http::Accept::APPLICATION_JSON,
+        .content_type = {},
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+    };
+    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
+      TraceInfo trace_info;
+      Trace event{trace_info, response};
+      get_instrument_ack(event, sequence);
+    };
+    (*connection_)("instrument"sv, request, callback);
+  });
+}
+
+void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
+  auto const STATE = RestState::INSTRUMENT;
+  profile_.instrument_ack([&]() {
+    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+      download_.retry(STATE);
+    };
+    auto handle_success = [&](auto &body) {
+      log::warn("DEBUG body={}"sv, body);
+      if (download_.skip(sequence, STATE)) {
+        log::info("Download state={} has already been processed"sv, STATE);
+      } else {
+        json::InstrumentAck instrument_ack{body, decode_buffer_};
+        if (instrument_ack.code == SYSTEM_CODE_SUCCESS) {
+          Trace event_2{event, instrument_ack};
+          (*this)(event_2);
+          download_.check(STATE);
+        } else {
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(instrument_ack.code), instrument_ack.msg);
+        }
+      }
+    };
+    process_response(event, handle_error, handle_success);
+  });
+}
+
+void Rest::operator()(Trace<json::InstrumentAck> const &event) {
+  auto &[trace_info, instrument_ack] = event;
+  log::info<4>("instrument_ack={}"sv, instrument_ack);
+  /*
+  // reference data
+  std::vector<Symbol> instrument;
+  size_t counter = 0;
+  for (auto &item : instrument_ack.data) {
+    log::info<2>("item={}"sv, item);
+    auto &instrument = item.instrument;
+    auto security_type = [&]() -> SecurityType {
+      if (item.type == CFI_CODE_SWAP) {
+        return SecurityType::SWAP;
+      }
+      if (item.type == CFI_CODE_FUTURES) {
+        return SecurityType::FUTURES;
+      }
+      return {};
+    }();
+    auto discard = shared_.discard_instrument(instrument);
+    auto reference_data = ReferenceData{
+        .stream_id = stream_id_,
+        .exchange = shared_.settings.exchange,
+        .instrument = instrument,
+        .description = {},
+        .security_type = security_type,
+        .external_security_id = {},
+        .cfi_code = item.type,
+        .base_currency = item.base_currency,
+        .quote_currency = item.quote_currency,
+        .settlement_currency = item.settle_currency,
+        .margin_currency = {},
+        .commission_currency = {},
+        .tick_size = item.tick_size,
+        .tick_size_steps = {},
+        .multiplier = item.multiplier,
+        .min_notional = NaN,
+        .min_trade_vol = item.lot_size,
+        .max_trade_vol = item.max_order_qty,
+        .trade_vol_step_size = item.lot_size,
+        .option_type = {},
+        .strike_currency = {},
+        .strike_price = NaN,
+        .underlying = item.root_instrument,
+        .time_zone = {},
+        .issue_date = utils::safe_cast(item.first_open_date),
+        .settlement_date = utils::safe_cast(item.settle_date),
+        .expiry_datetime = utils::safe_cast(item.expire_date),
+        .expiry_datetime_utc = utils::safe_cast(item.expire_date),
+        .exchange_time_utc = {},
+        .exchange_sequence = {},
+        .sending_time_utc = {},
+        .discard = discard,
+    };
+    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    if (discard) {
+      log::info<1>(R"(Drop instrument="{}")"sv, item.instrument);
+      continue;
+    }
+    if (shared_.all_instrument.emplace(instrument).second) {  // only include new
+      instrument.emplace_back(instrument);
+    }
+    ++counter;
+  }
+  if (!std::empty(instrument)) {
+    auto instrument_update = SymbolsUpdate{
+        .instrument = instrument,
+    };
+    handler_(instrument_update);
+  }
+  if (counter > 0) {
+    log::info("Contracts {} / {}"sv, counter, std::size(instrument_ack.data));
+  }
+  // market status
+  for (auto &item : instrument_ack.data) {
+    auto &instrument = item.instrument;
+    if (shared_.all_instrument.find(instrument) == std::end(shared_.all_instrument)) {
+      continue;
+    }
+    auto trading_status = [&]() -> TradingStatus {
+      switch (item.status) {
+        using enum json::Status::type_t;
+        case UNDEFINED_INTERNAL:
+        case UNKNOWN_INTERNAL:
+          break;
+        case OPEN:
+          return TradingStatus::OPEN;
+      }
+      return {};
+    }();
+    auto market_status = MarketStatus{
+        .stream_id = stream_id_,
+        .exchange = shared_.settings.exchange,
+        .instrument = instrument,
+        .trading_status = trading_status,
+        .exchange_time_utc = {},
+        .exchange_sequence = {},
+        .sending_time_utc = {},
+    };
+    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+  }
+  */
 }
 
 // order-book
@@ -428,7 +518,7 @@ void Rest::get_order_book(std::string_view const &symbol) {
     auto query = fmt::format("?symbol={}"sv, symbol);
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = shared_.api.rest_public.level2_snapshot,
+        .path = shared_.api.rest_public.market_orderbook,
         .query = query,
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},

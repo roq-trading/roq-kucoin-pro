@@ -1,0 +1,66 @@
+{
+  "name": "roq/kucoin_pro/json/CurrencyAckDataListItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "chainName",
+      "type": "std/string_view"
+    },
+    {
+      "name": "minWithdrawSize",
+      "type": "std/double"
+    },
+    {
+      "name": "minDepositSize",
+      "type": "std/double"
+    },
+    {
+      "name": "withdrawFeeRate",
+      "type": "std/double"
+    },
+    {
+      "name": "minWithdrawFee",
+      "type": "std/double"
+    },
+    {
+      "name": "isWithdrawEnabled",
+      "type": "std/bool"
+    },
+    {
+      "name": "isDepositEnabled",
+      "type": "std/bool"
+    },
+    {
+      "name": "confirms",
+      "type": "std/int32"
+    },
+    {
+      "name": "preConfirms",
+      "type": "std/int32"
+    },
+    {
+      "name": "contractAddress",
+      "type": "std/string_view"
+    },
+    {
+      "name": "withdrawPrecision",
+      "type": "std/int32"
+    },
+    {
+      "name": "maxWithdrawSize",
+      "type": "std/double"
+    },
+    {
+      "name": "maxDepositSize",
+      "type": "std/double"
+    },
+    {
+      "name": "needTag",
+      "type": "std/bool"
+    },
+    {
+      "name": "chainId",
+      "type": "std/string_view"
+    }
+  ]
+}

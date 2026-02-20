@@ -26,8 +26,6 @@
 #include "roq/kucoin_pro/private_token.hpp"
 #include "roq/kucoin_pro/shared.hpp"
 
-#include "roq/kucoin_pro/json/token.hpp"
-
 #include "roq/kucoin_pro/json/account_ack.hpp"
 #include "roq/kucoin_pro/json/fills_ack.hpp"
 #include "roq/kucoin_pro/json/orders_ack.hpp"
@@ -48,7 +46,6 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
     virtual void operator()(Trace<PositionUpdate> const &, bool is_last) = 0;
     // cross-communication
-    virtual void operator()(PrivateToken const &) = 0;
   };
 
   OrderEntryREST(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
@@ -90,11 +87,13 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   uint32_t download(OrderEntryState state);
 
+  /*
   // bullet-private
 
   void get_private_token();
   void get_private_token_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<json::Token> const &);
+  */
 
   // account
 

@@ -125,6 +125,7 @@ void OrderEntryREST::operator()(Event<Stop> const &) {
 
 void OrderEntryREST::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
+  /*
   if (!ready()) {
     return;
   }
@@ -133,6 +134,7 @@ void OrderEntryREST::operator()(Event<Timer> const &event) {
     next_private_token_refresh_ = now + 1min;  // if we need to retry
     get_private_token();
   }
+  */
 }
 
 void OrderEntryREST::operator()(metrics::Writer &writer) const {
@@ -246,14 +248,6 @@ uint32_t OrderEntryREST::download(OrderEntryState state) {
     case UNDEFINED:
       assert(false);
       break;
-    case PRIVATE_TOKEN: {
-      auto now = clock::get_system();
-      if (next_private_token_refresh_ < now) {
-        get_private_token();
-        return 1;
-      }
-      return 0;
-    }
     case ACCOUNT:
       get_account();
       return 1;
@@ -278,6 +272,7 @@ uint32_t OrderEntryREST::download(OrderEntryState state) {
   return 0;
 }
 
+/*
 // bullet-private
 
 void OrderEntryREST::get_private_token() {
@@ -355,13 +350,14 @@ void OrderEntryREST::operator()(Trace<json::Token> const &event) {
   }
   handler_(private_token);
 }
+*/
 
 // account
 
 void OrderEntryREST::get_account() {
   profile_.account([&]() {
     auto method = web::http::Method::GET;
-    auto path = shared_.api.rest_private.get_account_list;
+    auto path = shared_.api.rest_private.account_balance;
     auto headers = account_.create_headers(method, path, {}, {});
     auto request = web::rest::Request{
         .method = method,
@@ -434,7 +430,7 @@ void OrderEntryREST::operator()(Trace<json::AccountAck> const &event) {
 void OrderEntryREST::get_positions() {
   profile_.positions([&]() {
     auto method = web::http::Method::GET;
-    auto path = shared_.api.rest_private.get_position_list;
+    auto path = shared_.api.rest_private.position_open_list;
     auto headers = account_.create_headers(method, path, {}, {});
     auto request = web::rest::Request{
         .method = method,
@@ -508,7 +504,7 @@ void OrderEntryREST::operator()(Trace<json::PositionsAck> const &event) {
 void OrderEntryREST::get_orders() {
   profile_.orders([&]() {
     auto method = web::http::Method::GET;
-    auto path = shared_.api.rest_private.get_order_list;
+    auto path = shared_.api.rest_private.order_open_list;
     auto query = fmt::format(
         "?status=active"
         "&pageSize={}"sv,
@@ -625,7 +621,7 @@ void OrderEntryREST::operator()(Trace<json::OrdersAck> const &event) {
 void OrderEntryREST::get_fills() {
   profile_.fills([&]() {
     auto method = web::http::Method::GET;
-    auto path = shared_.api.rest_private.get_recent_fills;
+    auto path = shared_.api.rest_private.order_execution;
     auto headers = account_.create_headers(method, path, {}, {});
     auto request = web::rest::Request{
         .method = method,
@@ -724,7 +720,7 @@ void OrderEntryREST::create_order(
     }
     auto &[message_info, create_order] = event;
     auto method = web::http::Method::POST;
-    auto path = shared_.api.rest_private.add_order;
+    auto path = shared_.api.rest_private.order_place;
     auto body = json::Encoder::add_order(encode_buffer_, create_order, order, ref_data, request_id, shared_.margin_mode);
     log::debug(R"(body="{}")"sv, body);
     auto headers = account_.create_headers(method, path, {}, body);
@@ -801,7 +797,7 @@ void OrderEntryREST::cancel_order(
     }
     auto &[message_info, cancel_order] = event;
     auto method = web::http::Method::DELETE;
-    auto path = fmt::format("{}/{}"sv, shared_.api.rest_private.cancel_order, order.external_order_id);
+    auto path = fmt::format("{}/{}"sv, shared_.api.rest_private.order_cancel, order.external_order_id);
     auto headers = account_.create_headers(method, path, {}, {});
     auto request = web::rest::Request{
         .method = method,
@@ -905,7 +901,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
                 return;
               }
               auto method = web::http::Method::DELETE;
-              auto path = shared_.api.rest_private.cancel_all_orders;
+              auto path = shared_.api.rest_private.order_cancel_all;
               auto query = fmt::format("?symbol={}"sv, symbol);
               auto headers = account_.create_headers(method, path, query, {});
               auto request = web::rest::Request{

@@ -16,8 +16,9 @@ set(AUTOGEN_SCHEMAS
     cancel_all_orders_ack.json
     cancel_order_ack_data.json
     cancel_order_ack.json
-    contracts_ack_data_item.json
-    contracts_ack.json
+    currency_ack_data_list_item.json
+    currency_ack_data.json
+    currency_ack.json
     display_type.json
     error.json
     execution_data.json
@@ -33,6 +34,9 @@ set(AUTOGEN_SCHEMAS
     funding_rate_data.json
     funding_rate.json
     instance_server.json
+    instrument_ack_data_list_item.json
+    instrument_ack_data.json
+    instrument_ack.json
     level2_data_item.json
     level2_data.json
     level2.json
@@ -80,8 +84,6 @@ set(AUTOGEN_SCHEMAS
     ticker_v2_data.json
     ticker_v2.json
     time_in_force.json
-    token_data.json
-    token.json
     trade_type.json
     type.json
     wallet_balance_change_data.json

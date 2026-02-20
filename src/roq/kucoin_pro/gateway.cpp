@@ -154,7 +154,7 @@ void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
 void Gateway::operator()(Trace<PositionUpdate> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }
-
+/*
 void Gateway::operator()(Rest::PublicToken const &public_token) {
   log::debug(R"(uri="{}", query="{}", ping_frequency={})"sv, public_token.uri, public_token.query, public_token.ping_frequency);
   public_ws_uri_ = public_token.uri;
@@ -162,7 +162,7 @@ void Gateway::operator()(Rest::PublicToken const &public_token) {
   public_ws_ping_frequency_ = public_token.ping_frequency;
   // note! could create first MarketData here, but this message will always arrive first
 }
-
+*/
 void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
   auto [size, start_from] = shared_.symbols(symbols_update.symbols);
   ensure_symbol_slices(size);
@@ -183,7 +183,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     market_data_.emplace_back(std::move(market_data));
   }
 }
-
+/*
 void Gateway::operator()(PrivateToken const &private_token) {
   log::debug(R"(uri="{}", query="{}", ping_frequency={})"sv, private_token.uri, private_token.query, private_token.ping_frequency);
   auto account = private_token.account;
@@ -199,7 +199,7 @@ void Gateway::operator()(PrivateToken const &private_token) {
     (*drop_copy)(private_token);
   }
 }
-
+*/
 void Gateway::operator()(Event<Subscribe> const &event) {
   auto &[message_info, subscribe] = event;
   std::vector<Symbol> symbols;

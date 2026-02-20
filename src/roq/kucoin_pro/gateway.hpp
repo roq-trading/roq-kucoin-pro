@@ -82,12 +82,9 @@ struct Gateway final : public server::Handler,
   void operator()(Trace<FundsUpdate> const &, bool is_last) override;
   void operator()(Trace<PositionUpdate> const &, bool is_last) override;
 
-  void operator()(Rest::PublicToken const &) override;
   void operator()(Rest::SymbolsUpdate &) override;
 
   void ensure_symbol_slices(size_t size);
-
-  void operator()(PrivateToken const &) override;
 
   // utilities
 

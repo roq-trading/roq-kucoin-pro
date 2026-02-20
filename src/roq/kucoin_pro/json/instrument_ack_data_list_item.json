@@ -1,0 +1,115 @@
+{
+  "name": "roq/kucoin_pro/json/InstrumentAckDataListItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "name",
+      "type": "std/string_view"
+    },
+    {
+      "name": "baseCurrency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "displayBaseCurrency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "quoteCurrency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "maxBaseOrderSize",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tickSize",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tradingStatus",
+      "type": "std/string_view"
+    },
+    {
+      "name": "settlementCurrency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "contractType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "isInverse",
+      "type": "std/bool"
+    },
+    {
+      "name": "launchTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "expiryTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "settlementTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "maxPrice",
+      "type": "std/double"
+    },
+    {
+      "name": "lotSize",
+      "type": "std/double"
+    },
+    {
+      "name": "unitSize",
+      "type": "std/double"
+    },
+    {
+      "name": "makerFeeRate",
+      "type": "std/double"
+    },
+    {
+      "name": "takerFeeRate",
+      "type": "std/double"
+    },
+    {
+      "name": "settlementFeeRate",
+      "type": "std/double"
+    },
+    {
+      "name": "maxLeverage",
+      "type": "std/double"
+    },
+    {
+      "name": "indexSourceExchanges",
+      "type": "std/string_view",
+      "array": "std/span"
+    },
+    {
+      "name": "k",
+      "type": "std/double"
+    },
+    {
+      "name": "m",
+      "type": "std/double"
+    },
+    {
+      "name": "f",
+      "type": "std/double"
+    },
+    {
+      "name": "mmrLimit",
+      "type": "std/double"
+    },
+    {
+      "name": "mmrLevConstant",
+      "type": "std/double"
+    }
+  ]
+}

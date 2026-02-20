@@ -7,7 +7,8 @@ set(SOURCES
     # json_add_order_ack.cpp
     json_available_balance_change.cpp
     json_cancel_order_ack.cpp
-    json_contracts_ack.cpp
+    json_currency_ack.cpp
+    json_instrument_ack.cpp
     json_encoder.cpp
     json_execution.cpp
     json_fills_ack.cpp
@@ -27,7 +28,6 @@ set(SOURCES
     json_position_settlement.cpp
     json_snapshot24h.cpp
     json_ticker_v2.cpp
-    json_token.cpp
     json_wallet_balance_change.cpp
     json_withdraw_hold_change.cpp
     json_ws_add_order_ack.cpp

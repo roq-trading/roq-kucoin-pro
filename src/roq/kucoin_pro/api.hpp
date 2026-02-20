@@ -11,19 +11,20 @@ namespace kucoin_pro {
 
 struct API final {
   struct {
-    std::string_view bullet_public;
-    std::string_view contracts_active;
-    std::string_view level2_snapshot;
+    std::string_view market_currency;
+    std::string_view market_instrument;
+    std::string_view market_orderbook;
+    std::string_view server_status;
   } rest_public;
   struct {
-    std::string_view bullet_private;
-    std::string_view get_account_list;
-    std::string_view get_position_list;
-    std::string_view get_order_list;
-    std::string_view get_recent_fills;
-    std::string_view add_order;
-    std::string_view cancel_order;
-    std::string_view cancel_all_orders;
+    std::string_view account_mode;
+    std::string_view account_balance;
+    std::string_view position_open_list;
+    std::string_view order_open_list;
+    std::string_view order_execution;
+    std::string_view order_place;
+    std::string_view order_cancel;
+    std::string_view order_cancel_all;
   } rest_private;
   // ws
   // -- public

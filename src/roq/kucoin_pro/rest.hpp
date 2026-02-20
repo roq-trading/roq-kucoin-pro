@@ -25,9 +25,8 @@
 #include "roq/kucoin_pro/rest_state.hpp"
 #include "roq/kucoin_pro/shared.hpp"
 
-#include "roq/kucoin_pro/json/token.hpp"
-
-#include "roq/kucoin_pro/json/contracts_ack.hpp"
+#include "roq/kucoin_pro/json/currency_ack.hpp"
+#include "roq/kucoin_pro/json/instrument_ack.hpp"
 #include "roq/kucoin_pro/json/order_book_ack.hpp"
 
 namespace roq {
@@ -51,7 +50,6 @@ struct Rest final : public web::rest::Client::Handler {
     virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
     // cross-communication
-    virtual void operator()(PublicToken const &) = 0;
     virtual void operator()(SymbolsUpdate &) = 0;
   };
 
@@ -78,17 +76,17 @@ struct Rest final : public web::rest::Client::Handler {
 
   uint32_t download(RestState);
 
-  // bullet-public
+  // currency
 
-  void get_public_token();
-  void get_public_token_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::Token> const &);
+  void get_currency();
+  void get_currency_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void operator()(Trace<json::CurrencyAck> const &);
 
-  // contracts
+  // instrument
 
-  void get_contracts();
-  void get_contracts_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::ContractsAck> const &);
+  void get_instrument();
+  void get_instrument_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void operator()(Trace<json::InstrumentAck> const &);
 
   // order-book
 
@@ -116,9 +114,8 @@ struct Rest final : public web::rest::Client::Handler {
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile public_token, public_token_ack,  //
-        contracts, contracts_ack,                            //
-        order_book, order_book_ack;
+    utils::metrics::Profile currency, currency_ack,  //
+        instrument, instrument_ack, order_book, order_book_ack;
   } profile_;
   struct {
     utils::metrics::Latency ping;
