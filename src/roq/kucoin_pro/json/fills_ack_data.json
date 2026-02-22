@@ -1,0 +1,18 @@
+{
+  "name": "roq/kucoin_pro/json/FillsAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "tradeType",
+      "type": "roq/kucoin_pro/json/TradeType"
+    },
+    {
+      "name": "lastId"
+    },
+    {
+      "name": "items",
+      "type": "roq/kucoin_pro/json/FillsAckData",
+      "array": "std/span"
+    }
+  ]
+}

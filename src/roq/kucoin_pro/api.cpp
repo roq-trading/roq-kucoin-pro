@@ -21,6 +21,7 @@ API API::create(Settings const &) {
           .server_status = "/api/ua/v1/server/status"sv,
       },
       .rest_private{
+          .bullet_private = "/api/v2/bullet-private"sv,
           .account_mode = "/api/ua/v1/account/mode"sv,
           .account_balance = "/api/ua/v1/unified/account/balance"sv,
           .position_open_list = "/api/ua/v1/unified/position/open-list"sv,
@@ -28,7 +29,7 @@ API API::create(Settings const &) {
           .order_execution = "/api/ua/v1/unified/order/execution"sv,
           .order_place = "/api/ua/v1/unified/order/place"sv,
           .order_cancel = "/api/ua/v1/unified/order/cancel"sv,
-          .order_cancel_all = "api/ua/v1/unified/order/cancel-all"sv,
+          .order_cancel_all = "/api/ua/v1/unified/order/cancel-all"sv,
       },
       // ws
       // -- public

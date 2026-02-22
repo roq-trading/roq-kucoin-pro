@@ -1,5 +1,5 @@
 {
-  "name": "roq/kucoin_pro/json/PositionsAck",
+  "name": "roq/kucoin_pro/json/PositionAck",
   "type": "dictionary",
   "values": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "name": "data",
-      "type": "roq/kucoin_pro/json/PositionsAckDataItem",
+      "type": "roq/kucoin_pro/json/PositionAckDataItem",
       "array": "std/span"
     }
   ]

@@ -84,6 +84,8 @@ struct Gateway final : public server::Handler,
 
   void operator()(Rest::SymbolsUpdate &) override;
 
+  void operator()(PrivateToken const &) override;
+
   void ensure_symbol_slices(size_t size);
 
   // utilities

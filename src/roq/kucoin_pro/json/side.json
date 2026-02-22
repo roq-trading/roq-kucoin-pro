@@ -3,10 +3,20 @@
   "type": "enum",
   "values": [
     {
-      "name": "buy"
+      "raw": "buy",
+      "name": "BUY_LC"
     },
     {
-      "name": "sell"
+      "raw": "sell",
+      "name": "SELL_LC"
+    },
+    {
+      "raw": "BUY",
+      "name": "BUY"
+    },
+    {
+      "raw": "SELL",
+      "name": "SELL"
     }
   ]
 }

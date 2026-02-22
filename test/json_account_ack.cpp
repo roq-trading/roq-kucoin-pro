@@ -19,33 +19,39 @@ TEST_CASE("simple", "[json_account_ack]") {
   auto const message = R"({)"
                        R"("code":"200000",)"
                        R"("data":{)"
-                       R"("accountEquity":0,)"
-                       R"("unrealisedPNL":0,)"
-                       R"("marginBalance":0,)"
-                       R"("positionMargin":0,)"
-                       R"("orderMargin":0,)"
-                       R"("frozenFunds":0,)"
-                       R"("availableBalance":0,)"
-                       R"("currency":"XBT",)"
-                       R"("riskRatio":0,)"
-                       R"("maxWithdrawAmount":0)"
+                       R"("accountType":"UNIFIED",)"
+                       R"("ts":1771667355929,)"
+                       R"("accounts":[{)"
+                       R"("currencies":[{)"
+                       R"("currency":"USDT",)"
+                       R"("equity":"500.0000000000",)"
+                       R"("hold":"0.0000000000",)"
+                       R"("balance":"500.0000000000",)"
+                       R"("available":"500.0000000000",)"
+                       R"("liability":"0.0000000000")"
+                       R"(})"
+                       R"(])"
+                       R"(})"
+                       R"(])"
                        R"(})"
                        R"(})";
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200000);
     auto &data = obj.data;
-    CHECK(data.account_equity == 0.0_a);
-    CHECK(data.unrealised_pnl == 0.0_a);
-    CHECK(data.margin_balance == 0.0_a);
-    CHECK(data.position_margin == 0.0_a);
-    CHECK(data.order_margin == 0.0_a);
-    CHECK(data.frozen_funds == 0.0_a);
-    CHECK(data.available_balance == 0.0_a);
-    CHECK(data.currency == "XBT"sv);
-    CHECK(data.risk_ratio == 0.0_a);
-    CHECK(data.max_withdraw_amount == 0.0_a);
+    CHECK(data.account_type == json::AccountType::UNIFIED);
+    CHECK(data.ts == 1771667355929ms);
+    REQUIRE(std::size(data.accounts) == 1);
+    auto &a0 = data.accounts[0];
+    REQUIRE(std::size(a0.currencies) == 1);
+    auto &c0 = a0.currencies[0];
+    CHECK(c0.currency == "USDT"sv);
+    CHECK(c0.equity == 500.0_a);
+    CHECK(c0.hold == 0.0_a);
+    CHECK(c0.balance == 500.0_a);
+    CHECK(c0.available == 500.0_a);
+    CHECK(c0.liability == 0.0_a);
   };
-  core::json::BufferStack buffers{8192, 1};
+  core::json::BufferStack buffers{8192, 2};
   value_type obj{message, buffers};
   helper(obj);
 }

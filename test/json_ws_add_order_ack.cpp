@@ -13,22 +13,27 @@ using value_type = json::WSAddOrderAck;
 
 TEST_CASE("success", "[json_ws_add_order_ack]") {
   auto message = R"({)"
-                 R"("id":"IAACgxI9hU0AAQAAAAAA",)"
-                 R"("op":"futures.order",)"
+                 R"("id":"4wACJpW38FMAAQAAAAAA",)"
+                 R"("op":"uta.order",)"
                  R"("code":"200000",)"
                  R"("data":{)"
-                 R"("orderId":"403371203999346688",)"
-                 R"("clientOid":"IAACgxI9hU0AAQAAAAAA")"
+                 R"("orderId":"414936156380143616",)"
+                 R"("tradeType":"FUTURES",)"
+                 R"("ts":1771741690837000000,)"
+                 R"("clientOid":"4wACJpW38FMAAQAAAAAA")"
                  R"(},)"
-                 R"("inTime":1768984391308,)"
-                 R"("outTime":1768984391377)"
+                 R"("inTime":1771741690821,)"
+                 R"("outTime":1771741690838)"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.id == "IAACgxI9hU0AAQAAAAAA"sv);
+    CHECK(obj.id == "4wACJpW38FMAAQAAAAAA"sv);
     CHECK(obj.op == json::WSOp::ADD_ORDER_ACK);
     CHECK(obj.code == 200000);
-    CHECK(obj.data.order_id == "403371203999346688"sv);
-    CHECK(obj.data.client_oid == "IAACgxI9hU0AAQAAAAAA"sv);
+    auto &data = obj.data;
+    CHECK(data.order_id == "414936156380143616"sv);
+    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.ts == 1771741690837000000ns);
+    CHECK(data.client_oid == "4wACJpW38FMAAQAAAAAA"sv);
   };
   WSParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

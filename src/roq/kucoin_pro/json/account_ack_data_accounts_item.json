@@ -1,0 +1,11 @@
+{
+  "name": "roq/kucoin_pro/json/AccountAckDataAccountsItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "currencies",
+      "type": "roq/kucoin_pro/json/AccountAckDataAccountsItemCurrenciesItem",
+      "array": "std/span"
+    }
+  ]
+}

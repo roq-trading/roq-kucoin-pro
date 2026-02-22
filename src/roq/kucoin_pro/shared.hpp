@@ -44,7 +44,6 @@ struct Shared final {
 
  public:
   API const api;
-  MarginMode const margin_mode = {};
 
  private:
   struct {

@@ -3,10 +3,10 @@
   "type": "enum",
   "values": [
     {
-      "name": "market"
+      "name": "MARKET"
     },
     {
-      "name": "limit"
+      "name": "LIMIT"
     }
   ]
 }

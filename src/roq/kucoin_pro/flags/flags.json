@@ -6,7 +6,7 @@
       "name": "exchange",
       "type": "std/string",
       "required": true,
-      "default": "kucoin-futures",
+      "default": "kucoin-pro",
       "description": "Exchange identifier"
     },
     {
@@ -14,11 +14,6 @@
       "type": "std/bool",
       "default": false,
       "description": "Use WebSocket API?"
-    },
-    {
-      "name": "margin_mode",
-      "type": "std/string",
-      "description": "Default margin_mode (when CreateOrder doesn't explicitly specify)"
     }
   ]
 }

@@ -25,6 +25,7 @@ struct Account final {
   std::string create_ws_auth(std::string_view const &message);
 
   std::string const name;
+  bool const master;
 
  private:
   tools::Crypto crypto_;

@@ -3,48 +3,17 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "accountEquity",
-      "type": "std/double"
+      "name": "accountType",
+      "type": "roq/kucoin_pro/json/AccountType"
     },
     {
-      "name": "unrealisedPNL",
-      "type": "std/double"
+      "name": "ts",
+      "type": "std/milliseconds"
     },
     {
-      "name": "marginBalance",
-      "type": "std/double"
-    },
-    {
-      "name": "positionMargin",
-      "type": "std/double"
-    },
-    {
-      "name": "orderMargin",
-      "type": "std/double"
-    },
-    {
-      "name": "frozenFunds",
-      "type": "std/double"
-    },
-    {
-      "name": "availableBalance",
-      "type": "std/double"
-    },
-    {
-      "name": "currency",
-      "type": "std/string_view"
-    },
-    {
-      "name": "riskRatio",
-      "type": "std/double"
-    },
-    {
-      "name": "maxWithdrawAmount",
-      "type": "std/double"
-    },
-    {
-      "name": "availableMargin",
-      "type": "std/double"
+      "name": "accounts",
+      "type": "roq/kucoin_pro/json/AccountAckDataAccountsItem",
+      "array": "std/span"
     }
   ]
 }

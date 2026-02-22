@@ -86,6 +86,14 @@ std::string const &Config::get_secret(Account const &account) const {
   return (*iter).second.secret;
 }
 
+bool Config::get_master(Account const &account) const {
+  auto iter = accounts.find(static_cast<std::string_view>(account));
+  if (iter == std::end(accounts)) {
+    log::fatal(R"(Unknown account="{}")"sv, account);
+  }
+  return (*iter).second.master;
+}
+
 void Config::dispatch(server::config::Handler &handler) const {
   handler(exchange_);
   handler(symbols);

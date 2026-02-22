@@ -13,25 +13,27 @@ using value_type = json::WSCancelOrderAck;
 
 TEST_CASE("success", "[json_ws_cancel_order_ack]") {
   auto message = R"({)"
-                 R"("id":"1AACM_ObhU0AAgAAAAAA",)"
-                 R"("op":"futures.cancel",)"
+                 R"("id":"UQACRG2H61MAAgAAAAAA",)"
+                 R"("op":"uta.cancel",)"
                  R"("code":"200000",)"
                  R"("data":{)"
-                 R"("clientOid":"1wACM_ObhU0AAQAAAAAA")"
+                 R"("orderId":"414899660931538944",)"
+                 R"("tradeType":"FUTURES",)"
+                 R"("ts":1771738517838000000,)"
+                 R"("clientOid":"UgACRG2H61MAAQAAAAAA")"
                  R"(},)"
-                 R"("inTime":1768985019587,)"
-                 R"("outTime":1768985019589,)"
-                 R"("userRateLimit":{)"
-                 R"("remaining":1998,)"
-                 R"("limit":2000,)"
-                 R"("reset":6080)"
-                 R"(})"
+                 R"("inTime":1771738517837,)"
+                 R"("outTime":1771738517838)"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.id == "1AACM_ObhU0AAgAAAAAA"sv);
+    CHECK(obj.id == "UQACRG2H61MAAgAAAAAA"sv);
     CHECK(obj.op == json::WSOp::CANCEL_ORDER_ACK);
     CHECK(obj.code == 200000);
-    CHECK(obj.data.client_oid == "1wACM_ObhU0AAQAAAAAA"sv);
+    auto &data = obj.data;
+    CHECK(data.order_id == "414899660931538944"sv);
+    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.ts == 1771738517838000000ns);
+    CHECK(data.client_oid == "UgACRG2H61MAAQAAAAAA"sv);
   };
   WSParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

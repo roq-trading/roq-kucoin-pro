@@ -91,8 +91,6 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
           .currencies_ack = create_metrics(shared.settings, name_, "currencies_ack"sv),
           .instrument = create_metrics(shared.settings, name_, "instrument"sv),
           .instrument_ack = create_metrics(shared.settings, name_, "instrument_ack"sv),
-          .order_book = create_metrics(shared.settings, name_, "order_book"sv),
-          .order_book_ack = create_metrics(shared.settings, name_, "order_book_ack"sv),
       },
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
@@ -111,9 +109,6 @@ void Rest::operator()(Event<Stop> const &) {
 void Rest::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   (*connection_).refresh(now);
-  if (ready()) {
-    check_request_queue(now);
-  }
 }
 
 void Rest::operator()(metrics::Writer &writer) const {
@@ -125,8 +120,6 @@ void Rest::operator()(metrics::Writer &writer) const {
       .write(profile_.currencies_ack, metrics::Type::PROFILE)
       .write(profile_.instrument, metrics::Type::PROFILE)
       .write(profile_.instrument_ack, metrics::Type::PROFILE)
-      .write(profile_.order_book, metrics::Type::PROFILE)
-      .write(profile_.order_book_ack, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY);
 }
@@ -367,121 +360,7 @@ void Rest::operator()(Trace<json::InstrumentAck> const &event) {
   if (counter > 0) {
     log::info("Contracts {} / {}"sv, counter, std::size(instrument_ack.data.list));
   }
-  // XXX trading_status
-}
-
-// order-book
-
-void Rest::get_order_book(std::string_view const &symbol) {
-  profile_.order_book([&]() {
-    auto query = fmt::format("?symbol={}"sv, symbol);
-    auto request = web::rest::Request{
-        .method = web::http::Method::GET,
-        .path = shared_.api.rest_public.market_orderbook,
-        .query = query,
-        .accept = web::http::Accept::APPLICATION_JSON,
-        .content_type = {},
-        .headers = {},
-        .body = {},
-        .quality_of_service = {},
-    };
-    auto callback = [this, symbol = std::string{symbol}]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_order_book_ack(event, symbol);
-    };
-    (*connection_)("order_book"sv, request, callback);
-  });
-}
-
-// XXX TODO FIXME we need the symbol for retrying !!!
-void Rest::get_order_book_ack(Trace<web::rest::Response> const &event, [[maybe_unused]] std::string_view const &symbol) {
-  profile_.order_book_ack([&]() {
-    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
-      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      // XXX WHAT ???
-    };
-    auto handle_success = [&](auto &body) {
-      json::OrderBookAck order_book_ack{body, decode_buffer_};
-      if (order_book_ack.code == SYSTEM_CODE_SUCCESS) {
-        Trace event_2{event, order_book_ack};
-        (*this)(event_2);
-      };
-    };
-    process_response(event, handle_error, handle_success);
-  });
-}
-
-void Rest::operator()(Trace<json::OrderBookAck> const &event) {
-  auto &[trace_info, order_book_ack] = event;
-  log::info<4>("order_book_ack={}"sv, order_book_ack);
-  auto &data = order_book_ack.data;
-  auto sequence = data.sequence;
-  auto symbol = data.symbol;
-  auto &sequencer = shared_.mbp_sequencer[symbol];
-  auto &mbp = shared_.get_mbp();
-  auto emplace_back = [](auto &result, auto &item) {
-    auto mbp_update = MBPUpdate{
-        .price = item.price,
-        .quantity = item.size,
-        .implied_quantity = NaN,
-        .number_of_orders = {},
-        .update_action = {},
-        .price_level = {},
-    };
-    result.emplace_back(std::move(mbp_update));
-  };
-  for (auto &item : data.bids) {
-    emplace_back(mbp.bids, item);
-  }
-  for (auto &item : data.asks) {
-    emplace_back(mbp.asks, item);
-  }
-  try {
-    auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, [[maybe_unused]] auto retries, [[maybe_unused]] auto delay) {
-      log::info(R"(DEBUG PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-      auto market_by_price_update = MarketByPriceUpdate{
-          .stream_id = stream_id_,
-          .exchange = shared_.settings.exchange,
-          .symbol = symbol,
-          .bids = bids,
-          .asks = asks,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = data.ts,
-          .exchange_sequence = sequencer.last_sequence(),
-          .sending_time_utc = data.ts,
-          .price_precision = {},
-          .quantity_precision = {},
-          .max_depth = {},
-          .checksum = {},
-      };
-      Trace event{trace_info, market_by_price_update};
-      shared_(event, true, [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); });
-    };
-    auto request_snapshot = [&](auto retries) {
-      log::info(R"(DEBUG REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
-      if (shared_.settings.ws.mbp_request_max_retries && shared_.settings.ws.mbp_request_max_retries < retries) {
-        log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
-      }
-      shared_.depth_request_queue.emplace_back(symbol);
-    };
-    sequencer(mbp.bids, mbp.asks, sequence, false, publish_snapshot, request_snapshot);
-  } catch (BadState &) {
-    log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
-    // XXX HANS publish stale
-    sequencer.clear();
-    shared_.depth_request_queue.emplace_back(symbol);
-  }
-}
-
-void Rest::check_request_queue(std::chrono::nanoseconds now) {
-  shared_.depth_request_queue.dispatch(
-      [&](auto now) { return shared_.rate_limiter.can_request(now); },
-      [&](auto &symbol) {
-        log::info(R"(DEBUG Requesting order book snapshot symbol="{}")"sv, symbol);
-        get_order_book(symbol);
-      },
-      now);
+  // XXX FIXME TODO trading_status
 }
 
 void Rest::process_response(web::rest::Response const &response, auto error_handler, auto success_handler) {

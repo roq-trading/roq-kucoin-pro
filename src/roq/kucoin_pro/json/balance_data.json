@@ -1,0 +1,86 @@
+{
+  "name": "roq/kucoin_pro/json/BalanceData",
+  "type": "dictionary",
+  "values": [
+    {
+      "raw": "E",
+      "name": "sequence_number",
+      "type": "std/uint64"
+    },
+    {
+      "raw": "U",
+      "name": "last_update_time",
+      "type": "std/nanoseconds"
+    },
+    {
+      "raw": "c",
+      "name": "currency",
+      "type": "std/string_view"
+    },
+    {
+      "raw": "e",
+      "name": "equity",
+      "type": "std/double"
+    },
+    {
+      "raw": "b",
+      "name": "balance",
+      "type": "std/double"
+    },
+    {
+      "raw": "a",
+      "name": "availablen",
+      "type": "std/double"
+    },
+    {
+      "raw": "h",
+      "name": "hold",
+      "type": "std/double"
+    },
+    {
+      "raw": "l",
+      "name": "liability",
+      "type": "std/double"
+    },
+    {
+      "raw": "tCM",
+      "name": "total_cross_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "cPM",
+      "name": "cross_pos_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "cOM",
+      "name": "cross_order_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "cUP",
+      "name": "cross_un_pnl",
+      "type": "std/double"
+    },
+    {
+      "raw": "iPM",
+      "name": "isolated_pos_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "iOM",
+      "name": "isolated_order_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "iFF",
+      "name": "isolated_funding_fee_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "iUP",
+      "name": "isolated_un_pnl",
+      "type": "std/double"
+    }
+  ]
+}

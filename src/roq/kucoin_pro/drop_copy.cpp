@@ -41,12 +41,11 @@ auto create_name(auto stream_id, auto &account) {
   return fmt::format("{}:{}:{}"sv, stream_id, NAME, account.name);
 }
 
-auto create_connection(auto &handler, auto &settings, auto &context, auto &uri) {
-  io::web::URI uri_{uri};
+auto create_connection(auto &handler, auto &settings, auto &context) {
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
-      .uris = {&uri_, 1},
+      .uris = {&settings.ws.private_uri, 1},
       .host = {},
       .validate_certificate = settings.net.tls_validate_certificate,
       // connection manager
@@ -73,17 +72,9 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(
-    Handler &handler,
-    io::Context &context,
-    uint16_t stream_id,
-    Account &account,
-    Shared &shared,
-    std::string_view const &uri,
-    std::string_view const &query,
-    std::chrono::nanoseconds ping_frequency)
+DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, std::string_view const &query)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account)}, query_{query},
-      connection_{create_connection(*this, shared.settings, context, uri)}, ping_frequency_{ping_frequency},
+      connection_{create_connection(*this, shared.settings, context)}, ping_frequency_{60s},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -94,6 +85,8 @@ DropCopy::DropCopy(
           .error = create_metrics(shared.settings, name_, "error"sv),
           .pong = create_metrics(shared.settings, name_, "pong"sv),
           .ack = create_metrics(shared.settings, name_, "ack"sv),
+          .balance = create_metrics(shared.settings, name_, "balance"sv),
+          .order_all = create_metrics(shared.settings, name_, "order_all"sv),
       },
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
@@ -140,6 +133,8 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(profile_.error, metrics::Type::PROFILE)
       .write(profile_.pong, metrics::Type::PROFILE)
       .write(profile_.ack, metrics::Type::PROFILE)
+      .write(profile_.balance, metrics::Type::PROFILE)
+      .write(profile_.order_all, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY)
       .write(latency_.heartbeat, metrics::Type::LATENCY);
@@ -186,12 +181,14 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(web::socket::Client::Text const &text) {
-  parse(text.payload);
+void DropCopy::operator()(web::socket::Client::Text const &) {
+  log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(web::socket::Client::Binary const &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(web::socket::Client::Binary const &binary) {
+  std::string_view payload{reinterpret_cast<char const *>(std::data(binary.payload)), std::size(binary.payload)};
+  log::warn("DEBUG {}"sv, payload);
+  parse(payload);
 }
 
 void DropCopy::operator()(ConnectionStatus status) {
@@ -236,23 +233,39 @@ uint32_t DropCopy::download(DropCopyState state) {
 }
 
 void DropCopy::subscribe() {
-  subscribe("/contractAccount/wallet"sv);
-  subscribe("/contractMarket/tradeOrders"sv);
-  subscribe("/contract/positionAll"sv);
+  subscribe_account("balance"sv);
+  subscribe_trade("positionAll"sv);
+  subscribe_trade("orderAll"sv);
+  subscribe_trade("execution"sv);
 }
 
-void DropCopy::subscribe(std::string_view const &topic) {
+void DropCopy::subscribe_account(std::string_view const &channel) {
   auto now = clock::get_system();
   auto message = fmt::format(
       R"({{)"
       R"("id":"{}",)"
-      R"("type":"subscribe",)"
-      R"("topic":"{}",)"
-      R"("response":true,)"
-      R"("privateChannel":true)"
+      R"("action":"SUBSCRIBE",)"
+      R"("channel":"{}",)"
+      R"("accountType":"UNIFIED")"
       R"(}})"sv,
       now.count(),
-      topic);
+      channel);
+  log::warn("DEBUG {}"sv, message);
+  (*connection_).send_text(message);
+}
+
+void DropCopy::subscribe_trade(std::string_view const &channel) {
+  auto now = clock::get_system();
+  auto message = fmt::format(
+      R"({{)"
+      R"("id":"{}",)"
+      R"("action":"SUBSCRIBE",)"
+      R"("channel":"{}",)"
+      R"("tradeType":"UNIFIED")"
+      R"(}})"sv,
+      now.count(),
+      channel);
+  log::warn("DEBUG {}"sv, message);
   (*connection_).send_text(message);
 }
 
@@ -270,6 +283,7 @@ void DropCopy::send_ping(std::chrono::nanoseconds now) {
 
 void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
+    log::warn("DEBUG {}"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
@@ -324,6 +338,20 @@ void DropCopy::operator()(Trace<json::Trade> const &) {
 
 void DropCopy::operator()(Trace<json::OBU> const &) {
   log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(Trace<json::Balance> const &event) {
+  profile_.balance([&]() {
+    auto &[message_info, balance] = event;
+    log::warn("DEBUG balance={}"sv, balance);
+  });
+}
+
+void DropCopy::operator()(Trace<json::OrderAll> const &event) {
+  profile_.order_all([&]() {
+    auto &[message_info, order_all] = event;
+    log::warn("DEBUG order_all={}"sv, order_all);
+  });
 }
 
 }  // namespace kucoin_pro

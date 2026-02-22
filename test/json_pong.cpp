@@ -19,7 +19,7 @@ TEST_CASE("simple", "[json_pong]") {
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
     CHECK(obj.type == json::Type::PONG);
-    CHECK(obj.id == "366142583719543"sv);
+    CHECK(obj.id == 366142583719543);
     CHECK(obj.ts == 1771580331134146844ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

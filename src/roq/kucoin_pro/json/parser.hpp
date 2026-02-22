@@ -17,6 +17,9 @@
 #include "roq/kucoin_pro/json/ticker.hpp"
 #include "roq/kucoin_pro/json/trade.hpp"
 
+#include "roq/kucoin_pro/json/balance.hpp"
+#include "roq/kucoin_pro/json/order_all.hpp"
+
 namespace roq {
 namespace kucoin_pro {
 namespace json {
@@ -31,6 +34,9 @@ struct Parser final {
     virtual void operator()(Trace<json::Ticker> const &) = 0;
     virtual void operator()(Trace<json::Trade> const &) = 0;
     virtual void operator()(Trace<json::OBU> const &) = 0;
+
+    virtual void operator()(Trace<json::Balance> const &) = 0;
+    virtual void operator()(Trace<json::OrderAll> const &) = 0;
   };
 
   static bool dispatch(Handler &, std::string_view const &message, core::json::BufferStack &, TraceInfo const &, bool allow_unknown_event_types);

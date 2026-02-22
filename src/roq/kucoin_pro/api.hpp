@@ -18,6 +18,7 @@ struct API final {
     std::string_view server_status;
   } rest_public;
   struct {
+    std::string_view bullet_private;
     std::string_view account_mode;
     std::string_view account_balance;
     std::string_view position_open_list;

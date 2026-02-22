@@ -6,11 +6,11 @@
       "name": "pong"
     },
     {
-      "raw": "futures.order",
+      "raw": "uta.order",
       "name": "add_order_ack"
     },
     {
-      "raw": "futures.cancel",
+      "raw": "uta.cancel",
       "name": "cancel_order_ack"
     }
   ]

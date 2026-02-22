@@ -14,7 +14,6 @@ CONFIG_FILE="$ROQ_CONFIG_PATH/roq-kucoin-pro/$CONFIG.toml"
 
 FLAGFILE="../../../share/flags/prod/flags.cfg"
 
-MARGIN_MODE="CROSS"
 DOWNLOAD_TRADES_LOOKBACK="24h"
 WS_API=true
 
@@ -26,7 +25,6 @@ $PREFIX ./roq-kucoin-pro \
   --event_log_dir "$HOME/var/lib/roq/data" \
   --client_listen_address "$HOME/run/$NAME.sock" \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
-  --margin_mode="$MARGIN_MODE" \
   --download_trades_lookback="$DOWNLOAD_TRADES_LOOKBACK" \
   --ws_api=$WS_API \
   $@

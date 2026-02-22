@@ -10,9 +10,7 @@ namespace kucoin_pro {
 
 struct PrivateToken final {
   std::string_view account;
-  std::string_view uri;
   std::string_view query;
-  std::chrono::nanoseconds ping_frequency = {};
 };
 
 }  // namespace kucoin_pro

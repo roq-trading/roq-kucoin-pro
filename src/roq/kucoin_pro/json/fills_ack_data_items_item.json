@@ -1,5 +1,5 @@
 {
-  "name": "roq/kucoin_pro/json/FillsAckDataItem",
+  "name": "roq/kucoin_pro/json/FillsAckDataItemsItem",
   "type": "dictionary",
   "values": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "name": "liquidity",
-      "type": "roq/kucoin_pro/json/Liquidity"
+      "type": "roq/kucoin_pro/json/LiquidityRole"
     },
     {
       "name": "forceTaker",
@@ -98,10 +98,6 @@
     {
       "name": "createdAt",
       "type": "std/milliseconds"
-    },
-    {
-      "name": "positionSide",
-      "type": "roq/kucoin_pro/json/PositionSide"
     },
     {
       "name": "openFeeTaxPay",

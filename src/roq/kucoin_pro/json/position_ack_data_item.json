@@ -1,0 +1,14 @@
+{
+  "name": "roq/kucoin_pro/json/PositionAckDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "accountType",
+      "type": "roq/kucoin_pro/json/AccountType"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    }
+  ]
+}

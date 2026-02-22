@@ -26,14 +26,18 @@
 #include "roq/kucoin_pro/private_token.hpp"
 #include "roq/kucoin_pro/shared.hpp"
 
+#include "roq/kucoin_pro/json/token.hpp"
+
 #include "roq/kucoin_pro/json/account_ack.hpp"
 #include "roq/kucoin_pro/json/fills_ack.hpp"
 #include "roq/kucoin_pro/json/orders_ack.hpp"
-#include "roq/kucoin_pro/json/positions_ack.hpp"
+#include "roq/kucoin_pro/json/position_ack.hpp"
 
 #include "roq/kucoin_pro/json/add_order_ack.hpp"
 #include "roq/kucoin_pro/json/cancel_all_orders_ack.hpp"
 #include "roq/kucoin_pro/json/cancel_order_ack.hpp"
+
+#include "roq/kucoin_pro/json/order_book_ack.hpp"
 
 namespace roq {
 namespace kucoin_pro {
@@ -46,6 +50,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
     virtual void operator()(Trace<PositionUpdate> const &, bool is_last) = 0;
     // cross-communication
+    virtual void operator()(PrivateToken const &) = 0;
   };
 
   OrderEntryREST(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
@@ -87,13 +92,11 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   uint32_t download(OrderEntryState state);
 
-  /*
-  // bullet-private
+  // private-token
 
   void get_private_token();
   void get_private_token_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<json::Token> const &);
-  */
 
   // account
 
@@ -101,11 +104,11 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   void get_account_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<json::AccountAck> const &);
 
-  // positions
+  // position
 
-  void get_positions();
-  void get_positions_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::PositionsAck> const &);
+  void get_position();
+  void get_position_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void operator()(Trace<json::PositionAck> const &);
 
   // orders
 
@@ -142,7 +145,15 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   void cancel_all_orders_ack(Trace<web::rest::Response> const &, std::string_view const &request_id);
   void operator()(Trace<json::CancelAllOrdersAck> const &);
 
+  // order-book
+
+  void get_order_book(std::string_view const &symbol);
+  void get_order_book_ack(Trace<web::rest::Response> const &, std::string_view const &symbol);
+  void operator()(Trace<json::OrderBookAck> const &);
+
   // helpers
+
+  void check_request_queue(std::chrono::nanoseconds now);
 
   void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
 
@@ -156,6 +167,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   // config
   uint16_t const stream_id_;
   std::string const name_;
+  bool const master_;
   // connection
   std::unique_ptr<web::rest::Client> const connection_;
   // buffers
@@ -167,12 +179,13 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   struct {
     utils::metrics::Profile private_token, private_token_ack,  //
         account, account_ack,                                  //
-        positions, positions_ack,                              //
+        position, position_ack,                                //
         orders, orders_ack,                                    //
         fills, fills_ack,                                      //
         create_order, create_order_ack,                        //
         cancel_order, cancel_order_ack,                        //
-        cancel_all_orders, cancel_all_orders_ack;
+        cancel_all_orders, cancel_all_orders_ack,              //
+        order_book, order_book_ack;
   } profile_;
   struct {
     utils::metrics::Latency ping;

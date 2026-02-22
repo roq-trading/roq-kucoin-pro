@@ -175,14 +175,12 @@ void Gateway::ensure_symbol_slices(size_t size) {
     market_data_.emplace_back(std::move(market_data));
   }
 }
-/*
+
 void Gateway::operator()(PrivateToken const &private_token) {
-  log::debug(R"(uri="{}", query="{}", ping_frequency={})"sv, private_token.uri, private_token.query, private_token.ping_frequency);
   auto account = private_token.account;
   auto &drop_copy = drop_copy_[account];
   if (!drop_copy) {
-    auto tmp = std::make_unique<DropCopy>(
-        *this, context_, ++stream_id_, *accounts_.at(account), shared_, private_token.uri, private_token.query, private_token.ping_frequency);
+    auto tmp = std::make_unique<DropCopy>(*this, context_, ++stream_id_, *accounts_.at(account), shared_, private_token.query);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*tmp, message_info, start);
@@ -191,7 +189,7 @@ void Gateway::operator()(PrivateToken const &private_token) {
     (*drop_copy)(private_token);
   }
 }
-*/
+
 void Gateway::operator()(Event<Subscribe> const &event) {
   auto &[message_info, subscribe] = event;
   std::vector<Symbol> symbols;

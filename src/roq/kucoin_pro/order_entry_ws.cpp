@@ -47,11 +47,10 @@ auto create_query(auto &account) {
 }
 
 auto create_connection(auto &handler, auto &settings, auto &context) {
-  io::web::URI uri_{settings.ws.uri};
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
-      .uris = {&uri_, 1},
+      .uris = {&settings.ws.uri, 1},
       .host = {},
       .validate_certificate = settings.net.tls_validate_certificate,
       // connection manager
@@ -148,7 +147,8 @@ void OrderEntryWS::operator()(metrics::Writer &writer) const {
 uint16_t OrderEntryWS::operator()(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   auto &[message_info, create_order] = event;
-  auto message = json::Encoder::ws_add_order(encode_buffer_, create_order, order, ref_data, request_id, shared_.margin_mode);
+  auto message = json::Encoder::ws_add_order(encode_buffer_, create_order, order, ref_data, request_id);
+  log::warn(R"(DEBUG message="{}")"sv, message);
   (*connection_).send_text(message);
   return stream_id_;
 }
@@ -170,6 +170,7 @@ uint16_t OrderEntryWS::operator()(
     std::string_view const &previous_request_id) {
   auto &[message_info, cancel_order] = event;
   auto message = json::Encoder::ws_cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
+  log::warn(R"(DEBUG message="{}")"sv, message);
   (*connection_).send_text(message);
   return stream_id_;
 }
@@ -213,6 +214,7 @@ void OrderEntryWS::operator()(web::socket::Client::Latency const &latency) {
 }
 
 void OrderEntryWS::operator()(web::socket::Client::Text const &text) {
+  // log::warn(R"(DEBUG payload="{}")"sv, text.payload);
   parse(text.payload);
 }
 

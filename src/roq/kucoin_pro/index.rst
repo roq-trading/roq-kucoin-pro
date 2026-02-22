@@ -483,6 +483,7 @@ Outbound
 Comments
 --------
 
+* REST order cancel + cancel-all doesn't work
 
 
 References

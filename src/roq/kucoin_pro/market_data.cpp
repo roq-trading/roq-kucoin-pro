@@ -228,7 +228,10 @@ void MarketData::subscribe(std::span<Symbol const> const &symbols) {
     subscribe(shared_.api.obu, symbols, "1"sv);  // bbo
   }
   subscribe(shared_.api.trade, symbols);
-  subscribe(shared_.api.obu, symbols, "increment"sv);  // full depth
+  // XXX FIXME TODO only if has master account !!!
+  if (false) {
+    subscribe(shared_.api.obu, symbols, "increment"sv);  // full depth
+  }
 }
 
 void MarketData::subscribe(std::string_view const &topic, std::span<Symbol const> const &symbols) {
@@ -277,7 +280,7 @@ void MarketData::send_ping(std::chrono::nanoseconds now) {
   next_ping_ = now + shared_.settings.ws.ping_freq / 2;
   auto message = fmt::format(
       R"({{)"
-      R"("id":"{}",)"
+      R"("id":{},)"
       R"("type":"ping")"
       R"(}})"sv,
       now.count());
@@ -424,7 +427,9 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
       create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
     };
     auto dispatch_market_by_price = [&]() {
-      // auto previous_sequence = data.sequence - 1;
+      auto first_sequence = data.start_sequence;
+      auto last_sequence = data.end_sequence;
+      auto previous_sequence = data.start_sequence - 1;  // ???
       auto &sequencer = shared_.mbp_sequencer[data.symbol];
       auto &mbp = shared_.get_mbp();
       auto emplace_back = [](auto &result, auto &value) {
@@ -445,12 +450,11 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
         emplace_back(mbp.asks, item);
       }
       try {
-        /*
         auto create_update = [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) -> MarketByPriceUpdate {
           return {
               .stream_id = stream_id_,
               .exchange = shared_.settings.exchange,
-              .symbol = symbol,
+              .symbol = data.symbol,
               .bids = bids,
               .asks = asks,
               .update_type = update_type,
@@ -468,20 +472,19 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
           create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
         };
         auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, [[maybe_unused]] auto retries, [[maybe_unused]] auto delay) {
-          log::info(R"(DEBUG PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
+          log::info(R"(DEBUG PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, data.symbol, sequence);
           auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, sequencer.last_sequence());
           Trace event{trace_info, market_by_price_update};
           shared_(event, true, [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); });
         };
         auto request_snapshot = [&](auto retries) {
-          log::info(R"(DEBUG REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
+          log::info(R"(DEBUG REQUEST symbol="{}" (retries={}))"sv, data.symbol, retries);
           if (shared_.settings.ws.mbp_request_max_retries && shared_.settings.ws.mbp_request_max_retries < retries) {
-            log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
+            log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, data.symbol, retries);
           }
-          shared_.depth_request_queue.emplace_back(symbol);
+          shared_.depth_request_queue.emplace_back(data.symbol);
         };
-        sequencer(bids, asks, data.start_sequence, data.end_sequence, previous_sequence, publish_update, publish_snapshot, request_snapshot);
-        */
+        sequencer(mbp.bids, mbp.asks, data.start_sequence, data.end_sequence, previous_sequence, publish_update, publish_snapshot, request_snapshot);
       } catch (BadState &) {
         log::warn(R"(RESUBSCRIBE symbol="{}")"sv, data.symbol);
         // XXX HANS publish stale
@@ -503,6 +506,16 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
     }
   });
 }
+
+void MarketData::operator()(Trace<json::Balance> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void MarketData::operator()(Trace<json::OrderAll> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+// helpers
 
 void MarketData::check_subscribe_queue(std::chrono::nanoseconds now) {
   subscribe_queue_.dispatch([&](auto now) { return shared_.rate_limiter.can_request(now); }, [&](auto &message) { (*connection_).send_text(message); }, now);

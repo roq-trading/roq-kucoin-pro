@@ -13,6 +13,14 @@
     {
       "raw": "obu.FUTURES",
       "name": "obu_futures"
+    },
+    {
+      "raw": "balance.UNIFIED",
+      "name": "balance_unified"
+    },
+    {
+      "raw": "orderAll.UNIFIED",
+      "name": "order_all_unified"
     }
   ]
 }

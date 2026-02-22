@@ -12,7 +12,7 @@ namespace kucoin_pro {
 // === IMPLEMENTATION ===
 
 Account::Account(Config const &config, std::string_view const &name)
-    : name{name}, crypto_{config.get_api_key(name), config.get_secret(name), config.get_passphrase(name)} {
+    : name{name}, master{config.get_master(name)}, crypto_{config.get_api_key(name), config.get_secret(name), config.get_passphrase(name)} {
 }
 
 std::string Account::create_headers(web::http::Method method, std::string_view const &path, std::string_view const &query, std::string_view const &body) {

@@ -3,7 +3,7 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "id",
+      "name": "orderId",
       "type": "std/string_view"
     },
     {
@@ -11,7 +11,7 @@
       "type": "std/string_view"
     },
     {
-      "name": "type",
+      "name": "orderType",
       "type": "roq/kucoin_pro/json/OrderType"
     },
     {
@@ -19,43 +19,11 @@
       "type": "roq/kucoin_pro/json/Side"
     },
     {
-      "name": "price",
-      "type": "std/double"
-    },
-    {
       "name": "size",
       "type": "std/double"
     },
     {
-      "name": "value",
-      "type": "std/double"
-    },
-    {
-      "name": "dealValue",
-      "type": "std/double"
-    },
-    {
-      "name": "dealSize",
-      "type": "std/double"
-    },
-    {
-      "name": "stp",
-      "type": "roq/kucoin_pro/json/SelfTradePrevention"
-    },
-    {
-      "name": "stop",
-      "type": "roq/kucoin_pro/json/StopPriceType"
-    },
-    {
-      "name": "stopPriceType",
-      "type": "roq/kucoin_pro/json/StopPriceType"
-    },
-    {
-      "name": "stopTriggered",
-      "type": "std/bool"
-    },
-    {
-      "name": "stopPrice",
+      "name": "price",
       "type": "std/double"
     },
     {
@@ -63,31 +31,91 @@
       "type": "roq/kucoin_pro/json/TimeInForce"
     },
     {
+      "name": "tags",
+      "type": "std/string_view"
+    },
+    {
+      "name": "orderTime",
+      "type": "std/nanoseconds"
+    },
+    {
+      "name": "stp",
+      "type": "roq/kucoin_pro/json/SelfTradePrevention"
+    },
+    {
+      "name": "cancelAfter",
+      "type": "std/nanoseconds"
+    },
+    {
       "name": "postOnly",
       "type": "std/bool"
     },
     {
-      "name": "hidden",
+      "name": "reduceOnly",
       "type": "std/bool"
     },
     {
-      "name": "iceberg",
-      "type": "std/bool"
+      "name": "triggerDirection",
+      "type": "std/string_view"
     },
     {
-      "name": "leverage",
+      "name": "triggerPrice",
+      "type": "std/string_view"
+    },
+    {
+      "name": "triggerPriceType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tpTriggerPrice",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tpTriggerPriceType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "slTriggerPrice",
+      "type": "std/string_view"
+    },
+    {
+      "name": "slTriggerPriceType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "filledSize",
       "type": "std/double"
     },
     {
-      "name": "forceHold",
-      "type": "std/bool"
+      "name": "avgPrice",
+      "type": "std/double"
     },
     {
-      "name": "closeOrder",
-      "type": "std/bool"
+      "name": "fee",
+      "type": "std/double"
     },
     {
-      "name": "visibleSize",
+      "name": "feeCurrency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tax",
+      "type": "std/double"
+    },
+    {
+      "name": "updatedTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "triggerOrderId",
+      "type": "std/string_view"
+    },
+    {
+      "name": "cancelReason",
+      "type": "std/string_view"
+    },
+    {
+      "name": "cancelSize",
       "type": "std/double"
     },
     {
@@ -95,68 +123,12 @@
       "type": "std/string_view"
     },
     {
-      "name": "remark",
+      "name": "sizeUnit",
       "type": "std/string_view"
-    },
-    {
-      "name": "tags",
-      "type": "std/string_view"
-    },
-    {
-      "name": "isActive",
-      "type": "std/bool"
-    },
-    {
-      "name": "cancelExist",
-      "type": "std/bool"
-    },
-    {
-      "name": "createdAt",
-      "type": "std/milliseconds"
-    },
-    {
-      "name": "updatedAt",
-      "type": "std/milliseconds"
-    },
-    {
-      "name": "endAt",
-      "type": "std/milliseconds"
-    },
-    {
-      "name": "orderTime",
-      "type": "std/nanoseconds"
-    },
-    {
-      "name": "settleCurrency",
-      "type": "std/string_view"
-    },
-    {
-      "name": "marginMode",
-      "type": "roq/kucoin_pro/json/MarginMode"
-    },
-    {
-      "name": "avgDealPrice",
-      "type": "std/double"
     },
     {
       "name": "status",
-      "type": "roq/kucoin_pro/json/OrderStatus"
-    },
-    {
-      "name": "filledSize",
-      "type": "std/double"
-    },
-    {
-      "name": "filledValue",
-      "type": "std/double"
-    },
-    {
-      "name": "reduceOnly",
-      "type": "std/bool"
-    },
-    {
-      "name": "positionSide",
-      "type": "roq/kucoin_pro/json/PositionSide"
+      "type": "std/int32"
     }
   ]
 }

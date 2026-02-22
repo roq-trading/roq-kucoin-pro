@@ -50,7 +50,7 @@ std::string Crypto::create_headers(
       "KC-API-SIGN: {}\r\n"
       "KC-API-TIMESTAMP: {}\r\n"
       "KC-API-PASSPHRASE: {}\r\n"
-      "KC-API-KEY-VERSION: 2\r\n"sv,
+      "KC-API-KEY-VERSION: 3\r\n"sv,
       key_,
       signature,
       timestamp.count(),

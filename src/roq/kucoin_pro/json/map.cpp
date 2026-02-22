@@ -13,13 +13,51 @@ using Helper = detail::MapHelper<Args...>;
 
 // kucoin_pro::json => roq
 
-// kucoin_pro::json::Liquidity => roq::Liquidity
+// int32_t => roq::OrderStatus
 
 template <>
 template <>
-constexpr Helper<kucoin_pro::json::Liquidity>::operator std::optional<roq::Liquidity>() const {
+constexpr Helper<int32_t>::operator std::optional<roq::OrderStatus>() const {
   switch (std::get<0>(args_)) {
-    using enum kucoin_pro::json::Liquidity::type_t;
+    case 0:  // notTriggered
+      return roq::OrderStatus::SUSPENDED;
+    case 1:  // triggered
+      return roq::OrderStatus::ACCEPTED;
+    case 2:  // live
+      return roq::OrderStatus::WORKING;
+    case 3:  // filled
+      return roq::OrderStatus::COMPLETED;
+    case 4:  // partial filled
+      return roq::OrderStatus::WORKING;
+    case 5:  // canceled
+      return roq::OrderStatus::CANCELED;
+    case 6:  // partial canceld
+      return roq::OrderStatus::CANCELED;
+  }
+  return {};
+}
+
+static_assert(Helper{int32_t{0}} == roq::OrderStatus::SUSPENDED);
+static_assert(Helper{int32_t{1}} == roq::OrderStatus::ACCEPTED);
+static_assert(Helper{int32_t{2}} == roq::OrderStatus::WORKING);
+static_assert(Helper{int32_t{3}} == roq::OrderStatus::COMPLETED);
+static_assert(Helper{int32_t{4}} == roq::OrderStatus::WORKING);
+static_assert(Helper{int32_t{5}} == roq::OrderStatus::CANCELED);
+static_assert(Helper{int32_t{6}} == roq::OrderStatus::CANCELED);
+
+template <>
+template <>
+std::optional<roq::OrderStatus> Map<int32_t>::helper() const {
+  return Helper{args_};
+}
+
+// kucoin_pro::json::LiquidityRole => roq::Liquidity
+
+template <>
+template <>
+constexpr Helper<kucoin_pro::json::LiquidityRole>::operator std::optional<roq::Liquidity>() const {
+  switch (std::get<0>(args_)) {
+    using enum kucoin_pro::json::LiquidityRole::type_t;
     case UNDEFINED_INTERNAL:
       return roq::Liquidity::UNDEFINED;
     case UNKNOWN_INTERNAL:
@@ -32,13 +70,13 @@ constexpr Helper<kucoin_pro::json::Liquidity>::operator std::optional<roq::Liqui
   return {};
 }
 
-static_assert(Helper{kucoin_pro::json::Liquidity{kucoin_pro::json::Liquidity::UNDEFINED_INTERNAL}} == roq::Liquidity::UNDEFINED);
-static_assert(Helper{kucoin_pro::json::Liquidity{kucoin_pro::json::Liquidity::TAKER}} == roq::Liquidity::TAKER);
-static_assert(Helper{kucoin_pro::json::Liquidity{kucoin_pro::json::Liquidity::MAKER}} == roq::Liquidity::MAKER);
+static_assert(Helper{kucoin_pro::json::LiquidityRole{kucoin_pro::json::LiquidityRole::UNDEFINED_INTERNAL}} == roq::Liquidity::UNDEFINED);
+static_assert(Helper{kucoin_pro::json::LiquidityRole{kucoin_pro::json::LiquidityRole::TAKER}} == roq::Liquidity::TAKER);
+static_assert(Helper{kucoin_pro::json::LiquidityRole{kucoin_pro::json::LiquidityRole::MAKER}} == roq::Liquidity::MAKER);
 
 template <>
 template <>
-std::optional<roq::Liquidity> Map<kucoin_pro::json::Liquidity>::helper() const {
+std::optional<roq::Liquidity> Map<kucoin_pro::json::LiquidityRole>::helper() const {
   return Helper{args_};
 }
 
@@ -132,75 +170,6 @@ std::optional<roq::OrderType> Map<kucoin_pro::json::OrderType>::helper() const {
   return Helper{args_};
 }
 
-// {kucoin_pro::json::PositionSide, kucoin_pro::json::Side} => roq::PositionEffect
-
-template <>
-template <>
-constexpr Helper<kucoin_pro::json::PositionSide, kucoin_pro::json::Side>::operator std::optional<roq::PositionEffect>() const {
-  switch (std::get<0>(args_)) {
-    using enum kucoin_pro::json::PositionSide::type_t;
-    case UNDEFINED_INTERNAL:
-      return roq::PositionEffect::UNDEFINED;
-    case UNKNOWN_INTERNAL:
-      return roq::PositionEffect::UNDEFINED;
-    case BOTH:
-      return roq::PositionEffect::UNDEFINED;
-    case LONG:
-      switch (std::get<1>(args_)) {
-        using enum kucoin_pro::json::Side::type_t;
-        case UNDEFINED_INTERNAL:
-          return roq::PositionEffect::UNDEFINED;
-        case UNKNOWN_INTERNAL:
-          return roq::PositionEffect::UNDEFINED;
-        case BUY:
-          return roq::PositionEffect::OPEN;
-        case SELL:
-          return roq::PositionEffect::CLOSE;
-      }
-      break;
-    case SHORT:
-      switch (std::get<1>(args_)) {
-        using enum kucoin_pro::json::Side::type_t;
-        case UNDEFINED_INTERNAL:
-          return roq::PositionEffect::UNDEFINED;
-        case UNKNOWN_INTERNAL:
-          return roq::PositionEffect::UNDEFINED;
-        case BUY:
-          return roq::PositionEffect::CLOSE;
-        case SELL:
-          return roq::PositionEffect::OPEN;
-      }
-      break;
-  }
-  return {};
-}
-
-static_assert(
-    Helper{
-        kucoin_pro::json::PositionSide{kucoin_pro::json::PositionSide::UNDEFINED_INTERNAL},
-        kucoin_pro::json::Side{kucoin_pro::json::Side::UNDEFINED_INTERNAL}} == roq::PositionEffect::UNDEFINED);
-static_assert(
-    Helper{kucoin_pro::json::PositionSide{kucoin_pro::json::PositionSide::BOTH}, kucoin_pro::json::Side{kucoin_pro::json::Side::UNDEFINED_INTERNAL}} ==
-    roq::PositionEffect::UNDEFINED);
-static_assert(
-    Helper{kucoin_pro::json::PositionSide{kucoin_pro::json::PositionSide::LONG}, kucoin_pro::json::Side{kucoin_pro::json::Side::BUY}} ==
-    roq::PositionEffect::OPEN);
-static_assert(
-    Helper{kucoin_pro::json::PositionSide{kucoin_pro::json::PositionSide::LONG}, kucoin_pro::json::Side{kucoin_pro::json::Side::SELL}} ==
-    roq::PositionEffect::CLOSE);
-static_assert(
-    Helper{kucoin_pro::json::PositionSide{kucoin_pro::json::PositionSide::SHORT}, kucoin_pro::json::Side{kucoin_pro::json::Side::BUY}} ==
-    roq::PositionEffect::CLOSE);
-static_assert(
-    Helper{kucoin_pro::json::PositionSide{kucoin_pro::json::PositionSide::SHORT}, kucoin_pro::json::Side{kucoin_pro::json::Side::SELL}} ==
-    roq::PositionEffect::OPEN);
-
-template <>
-template <>
-std::optional<roq::PositionEffect> Map<kucoin_pro::json::PositionSide, kucoin_pro::json::Side>::helper() const {
-  return Helper{args_};
-}
-
 // kucoin_pro::json::Side => roq::Side
 
 template <>
@@ -212,6 +181,10 @@ constexpr Helper<kucoin_pro::json::Side>::operator std::optional<roq::Side>() co
       return roq::Side::UNDEFINED;
     case UNKNOWN_INTERNAL:
       return roq::Side::UNDEFINED;
+    case BUY_LC:
+      return roq::Side::BUY;
+    case SELL_LC:
+      return roq::Side::SELL;
     case BUY:
       return roq::Side::BUY;
     case SELL:
@@ -221,6 +194,8 @@ constexpr Helper<kucoin_pro::json::Side>::operator std::optional<roq::Side>() co
 }
 
 static_assert(Helper{kucoin_pro::json::Side{kucoin_pro::json::Side::UNDEFINED_INTERNAL}} == roq::Side::UNDEFINED);
+static_assert(Helper{kucoin_pro::json::Side{kucoin_pro::json::Side::BUY_LC}} == roq::Side::BUY);
+static_assert(Helper{kucoin_pro::json::Side{kucoin_pro::json::Side::SELL_LC}} == roq::Side::SELL);
 static_assert(Helper{kucoin_pro::json::Side{kucoin_pro::json::Side::BUY}} == roq::Side::BUY);
 static_assert(Helper{kucoin_pro::json::Side{kucoin_pro::json::Side::SELL}} == roq::Side::SELL);
 
@@ -249,6 +224,8 @@ constexpr Helper<kucoin_pro::json::TimeInForce>::operator std::optional<roq::Tim
       return roq::TimeInForce::FOK;
     case GTT:
       return roq::TimeInForce::UNDEFINED;
+    case RTI:
+      return roq::TimeInForce::UNDEFINED;
   }
   return {};
 }
@@ -258,6 +235,7 @@ static_assert(Helper{kucoin_pro::json::TimeInForce{kucoin_pro::json::TimeInForce
 static_assert(Helper{kucoin_pro::json::TimeInForce{kucoin_pro::json::TimeInForce::IOC}} == roq::TimeInForce::IOC);
 static_assert(Helper{kucoin_pro::json::TimeInForce{kucoin_pro::json::TimeInForce::FOK}} == roq::TimeInForce::FOK);
 static_assert(Helper{kucoin_pro::json::TimeInForce{kucoin_pro::json::TimeInForce::GTT}} == roq::TimeInForce::UNDEFINED);
+static_assert(Helper{kucoin_pro::json::TimeInForce{kucoin_pro::json::TimeInForce::RTI}} == roq::TimeInForce::UNDEFINED);
 
 template <>
 template <>

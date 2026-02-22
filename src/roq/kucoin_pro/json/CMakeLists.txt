@@ -5,16 +5,17 @@ set(SOURCES encoder.cpp map.cpp parser.cpp utils.cpp ws_parser.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    depth.json
-    update_type.json
-    obu.json
-    obu_data.json
-    obu_data_item.json
+    account_ack_data_accounts_item_currencies_item.json
+    account_ack_data_accounts_item.json
     account_ack_data.json
     account_ack.json
+    account_type.json
     ack.json
     add_order_ack_data.json
     add_order_ack.json
+    balance_data.json
+    balance.json
+    business_type.json
     cancel_all_orders_ack_data.json
     cancel_all_orders_ack.json
     cancel_order_ack_data.json
@@ -26,18 +27,26 @@ set(AUTOGEN_SCHEMAS
     currency_ack_data.json
     currency_ack_data_list_item.json
     currency_ack.json
+    depth.json
     display_type.json
     error.json
+    event_type.json
     fee_type.json
-    fills_ack_data_item.json
+    fills_ack_data_items_item.json
+    fills_ack_data.json
     fills_ack.json
     instance_server.json
     instrument_ack_data.json
     instrument_ack_data_list_item.json
     instrument_ack.json
-    liquidity.json
+    liquidity_role.json
     margin_mode.json
     market_stage.json
+    obu_data_item.json
+    obu_data.json
+    obu.json
+    order_all_data.json
+    order_all.json
     order_book_ack_data_bids_asks_item.json
     order_book_ack_data.json
     order_book_ack.json
@@ -48,9 +57,11 @@ set(AUTOGEN_SCHEMAS
     order_type.json
     order_update_type.json
     pong.json
-    positions_ack_data_item.json
-    positions_ack.json
+    position_ack_data_item.json
+    position_ack.json
     position_side.json
+    price_type.json
+    quantity_unit.json
     self_trade_prevention.json
     side.json
     status.json
@@ -59,10 +70,14 @@ set(AUTOGEN_SCHEMAS
     ticker_data.json
     ticker.json
     time_in_force.json
+    token_data.json
+    token.json
     trade_data.json
     trade.json
     trade_type.json
+    trigger_direction.json
     type.json
+    update_type.json
     welcome.json
     ws_add_order_ack_data.json
     ws_add_order_ack.json

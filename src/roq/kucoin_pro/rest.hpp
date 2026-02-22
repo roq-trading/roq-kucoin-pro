@@ -27,7 +27,6 @@
 
 #include "roq/kucoin_pro/json/currencies_ack.hpp"
 #include "roq/kucoin_pro/json/instrument_ack.hpp"
-#include "roq/kucoin_pro/json/order_book_ack.hpp"
 
 namespace roq {
 namespace kucoin_pro {
@@ -88,15 +87,7 @@ struct Rest final : public web::rest::Client::Handler {
   void get_instrument_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<json::InstrumentAck> const &);
 
-  // order-book
-
-  void get_order_book(std::string_view const &symbol);
-  void get_order_book_ack(Trace<web::rest::Response> const &, std::string_view const &symbol);
-  void operator()(Trace<json::OrderBookAck> const &);
-
   // helpers
-
-  void check_request_queue(std::chrono::nanoseconds now);
 
   void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
 
@@ -115,7 +106,7 @@ struct Rest final : public web::rest::Client::Handler {
   } counter_;
   struct {
     utils::metrics::Profile currencies, currencies_ack,  //
-        instrument, instrument_ack, order_book, order_book_ack;
+        instrument, instrument_ack;
   } profile_;
   struct {
     utils::metrics::Latency ping;

@@ -21,7 +21,6 @@ struct Settings final : public server::flags::Settings {
 
   std::string_view exchange;
   bool ws_api = {};
-  std::string_view margin_mode;
 
   flags::Misc misc;
   flags::REST rest;
@@ -45,7 +44,6 @@ struct fmt::formatter<roq::kucoin_pro::Settings> {
         context.out(),
         R"({{)"
         R"(exchange="{}", )"
-        R"(margin_mode={}, )"
         R"(misc={}, )"
         R"(rest={}, )"
         R"(ws={}, )"
@@ -54,7 +52,6 @@ struct fmt::formatter<roq::kucoin_pro::Settings> {
         R"(server={})"
         R"(}})"sv,
         value.exchange,
-        value.margin_mode,
         value.misc,
         value.rest,
         value.ws,

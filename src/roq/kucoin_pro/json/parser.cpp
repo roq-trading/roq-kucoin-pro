@@ -77,6 +77,13 @@ bool Parser::dispatch(
           case OBU_FUTURES:
             result = dispatch_helper<OBU>(handler, message, buffer_stack, trace_info);
             return true;
+          //
+          case BALANCE_UNIFIED:
+            result = dispatch_helper<Balance>(handler, message, buffer_stack, trace_info);
+            return true;
+          case ORDER_ALL_UNIFIED:
+            result = dispatch_helper<OrderAll>(handler, message, buffer_stack, trace_info);
+            return true;
         }
         break;
       }
@@ -84,97 +91,6 @@ bool Parser::dispatch(
     return result;
   };
   core::json::Parser::dispatch<core::json::Object>(helper, message);
-  /*
-  Message message_2{message, buffer_stack};
-  switch (message_2.type) {
-  using enum json::Type::type_t;
-  case UNDEFINED_INTERNAL:
-  if (allow_unknown_event_types) {
-    return false;
-  }
-  break;
-  case UNKNOWN_INTERNAL:
-  break;
-  case WELCOME:
-  dispatch_helper<Welcome>(handler, message, buffer_stack, trace_info);
-  return true;
-  case ERROR:
-  dispatch_helper<Error>(handler, message, buffer_stack, trace_info);
-  return true;
-  case PONG:
-  dispatch_helper<Pong>(handler, message, buffer_stack, trace_info);
-  return true;
-  case ACK:
-  dispatch_helper<Ack>(handler, message, buffer_stack, trace_info);
-  return true;
-  case MESSAGE:
-  switch (message_2.subject) {
-    using enum json::Subject::type_t;
-    case UNDEFINED_INTERNAL:
-      break;
-    case UNKNOWN_INTERNAL:
-      if (allow_unknown_event_types) {
-        return false;
-      }
-      break;
-    case TICKER_V2:
-      dispatch_helper<TickerV2>(handler, message, buffer_stack, trace_info);
-      return true;
-    case MATCH:
-      dispatch_helper<Match>(handler, message, buffer_stack, trace_info);
-      return true;
-    case EXECUTION:
-      dispatch_helper<Execution>(handler, message, buffer_stack, trace_info);
-      return true;
-    case MARK_INDEX_PRICE:
-      dispatch_helper<MarkIndexPrice>(handler, message, buffer_stack, trace_info);
-      return true;
-    case FUNDING_RATE:
-      dispatch_helper<FundingRate>(handler, message, buffer_stack, trace_info);
-      return true;
-    case LEVEL2:
-      dispatch_helper<Level2>(handler, message, buffer_stack, trace_info);
-      return true;
-    case FUNDING_BEGIN:
-      dispatch_helper<FundingBegin>(handler, message, buffer_stack, trace_info);
-      return true;
-    case FUNDING_END:
-      dispatch_helper<FundingEnd>(handler, message, buffer_stack, trace_info);
-      return true;
-    case SNAPSHOT_24H:
-      dispatch_helper<Snapshot24h>(handler, message, buffer_stack, trace_info);
-      return true;
-    case WALLET_BALANCE_CHANGE:
-      dispatch_helper<WalletBalanceChange>(handler, message, buffer_stack, trace_info);
-      return true;
-    case ORDER_MARGIN_CHANGE:
-      dispatch_helper<OrderMarginChange>(handler, message, buffer_stack, trace_info);
-      return true;
-    case AVAILABLE_BALANCE_CHANGE:
-      dispatch_helper<AvailableBalanceChange>(handler, message, buffer_stack, trace_info);
-      return true;
-    case WITHDRAW_HOLD_CHANGE:
-      dispatch_helper<WithdrawHoldChange>(handler, message, buffer_stack, trace_info);
-      return true;
-    case POSITION_CHANGE:
-      dispatch_helper<PositionChange>(handler, message, buffer_stack, trace_info);
-      return true;
-    case POSITION_SETTLEMENT:
-      dispatch_helper<PositionSettlement>(handler, message, buffer_stack, trace_info);
-      return true;
-    case POSITION_ADJUST_RISK_LIMIT:
-      dispatch_helper<PositionAdjustRiskLimit>(handler, message, buffer_stack, trace_info);
-      return true;
-    case SYMBOL_ORDER_CHANGE:
-      dispatch_helper<SymbolOrderChange>(handler, message, buffer_stack, trace_info);
-      return true;
-    case ORDER_CHANGE:
-      dispatch_helper<OrderChange>(handler, message, buffer_stack, trace_info);
-      return true;
-  }
-  break;
-  }
-  */
   if (result || allow_unknown_event_types) {
     return result;
   }

@@ -3,7 +3,7 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "currentPage",
+      "name": "pageNumber",
       "type": "std/int32"
     },
     {
@@ -22,6 +22,10 @@
       "name": "items",
       "type": "roq/kucoin_pro/json/OrdersAckDataItemsItem",
       "array": "std/span"
+    },
+    {
+      "name": "tradeType",
+      "type": "roq/kucoin_pro/json/TradeType"
     }
   ]
 }
