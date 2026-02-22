@@ -31,10 +31,11 @@ set(AUTOGEN_SCHEMAS
     display_type.json
     error.json
     event_type.json
+    execution_ack_data_items_item.json
+    execution_ack_data.json
+    execution_ack.json
     fee_type.json
-    fills_ack_data_items_item.json
-    fills_ack_data.json
-    fills_ack.json
+    fill_type.json
     instance_server.json
     instrument_ack_data.json
     instrument_ack_data_list_item.json
@@ -59,6 +60,8 @@ set(AUTOGEN_SCHEMAS
     pong.json
     position_ack_data_item.json
     position_ack.json
+    position_all_data.json
+    position_all.json
     position_side.json
     price_type.json
     quantity_unit.json

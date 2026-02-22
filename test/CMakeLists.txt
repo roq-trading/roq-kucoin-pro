@@ -3,22 +3,23 @@ include(RoqAutogen)
 set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
-    json_order_all.cpp
-    json_fills_ack.cpp
-    json_orders_ack.cpp
-    json_position_ack.cpp
-    json_obu.cpp
-    json_trade.cpp
-    json_ticker.cpp
-    json_pong.cpp
     json_account_ack.cpp
     # json_add_order_ack.cpp
     json_cancel_order_ack.cpp
-    json_currency_ack.cpp
     json_currencies_ack.cpp
-    json_instrument_ack.cpp
+    json_currency_ack.cpp
     json_encoder.cpp
+    json_execution_ack.cpp
+    json_instrument_ack.cpp
+    json_obu.cpp
+    json_order_all.cpp
     json_order_book_ack.cpp
+    json_orders_ack.cpp
+    json_pong.cpp
+    json_position_ack.cpp
+    json_position_all.cpp
+    json_ticker.cpp
+    json_trade.cpp
     json_welcome.cpp
     json_ws_add_order_ack.cpp
     json_ws_cancel_order_ack.cpp

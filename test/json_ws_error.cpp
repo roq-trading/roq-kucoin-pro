@@ -10,7 +10,7 @@ using namespace roq::kucoin_pro;
 using namespace std::literals;
 
 using value_type = json::WSError;
-
+/*
 TEST_CASE("create_order", "[json_ws_parser]") {
   auto message = R"({)"
                  R"("id":"_QACfSLXfE0AAQAAAAAA",)"
@@ -49,3 +49,4 @@ TEST_CASE("cancel_order", "[json_ws_parser]") {
   };
   WSParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
+*/

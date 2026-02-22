@@ -19,6 +19,10 @@
       "name": "balance_unified"
     },
     {
+      "raw": "positionAll.UNIFIED",
+      "name": "position_all_unified"
+    },
+    {
       "raw": "orderAll.UNIFIED",
       "name": "order_all_unified"
     }

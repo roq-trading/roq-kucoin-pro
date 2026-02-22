@@ -19,6 +19,7 @@
 
 #include "roq/kucoin_pro/json/balance.hpp"
 #include "roq/kucoin_pro/json/order_all.hpp"
+#include "roq/kucoin_pro/json/position_all.hpp"
 
 namespace roq {
 namespace kucoin_pro {
@@ -36,6 +37,7 @@ struct Parser final {
     virtual void operator()(Trace<json::OBU> const &) = 0;
 
     virtual void operator()(Trace<json::Balance> const &) = 0;
+    virtual void operator()(Trace<json::PositionAll> const &) = 0;
     virtual void operator()(Trace<json::OrderAll> const &) = 0;
   };
 

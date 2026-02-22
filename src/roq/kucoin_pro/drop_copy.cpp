@@ -86,6 +86,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
           .pong = create_metrics(shared.settings, name_, "pong"sv),
           .ack = create_metrics(shared.settings, name_, "ack"sv),
           .balance = create_metrics(shared.settings, name_, "balance"sv),
+          .position_all = create_metrics(shared.settings, name_, "position_all"sv),
           .order_all = create_metrics(shared.settings, name_, "order_all"sv),
       },
       latency_{
@@ -134,6 +135,7 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(profile_.pong, metrics::Type::PROFILE)
       .write(profile_.ack, metrics::Type::PROFILE)
       .write(profile_.balance, metrics::Type::PROFILE)
+      .write(profile_.position_all, metrics::Type::PROFILE)
       .write(profile_.order_all, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY)
@@ -236,7 +238,7 @@ void DropCopy::subscribe() {
   subscribe_account("balance"sv);
   subscribe_trade("positionAll"sv);
   subscribe_trade("orderAll"sv);
-  subscribe_trade("execution"sv);
+  subscribe_trade("execution"sv);  // 2026-02-22: not currently supported by exchange
 }
 
 void DropCopy::subscribe_account(std::string_view const &channel) {
@@ -344,6 +346,13 @@ void DropCopy::operator()(Trace<json::Balance> const &event) {
   profile_.balance([&]() {
     auto &[message_info, balance] = event;
     log::warn("DEBUG balance={}"sv, balance);
+  });
+}
+
+void DropCopy::operator()(Trace<json::PositionAll> const &event) {
+  profile_.position_all([&]() {
+    auto &[message_info, position_all] = event;
+    log::warn("DEBUG position_all={}"sv, position_all);
   });
 }
 

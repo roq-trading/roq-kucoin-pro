@@ -3,12 +3,60 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "accountType",
-      "type": "roq/kucoin_pro/json/AccountType"
+      "name": "id",
+      "type": "std/int64"
     },
     {
-      "name": "ts",
-      "type": "std/milliseconds"
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "marginMode",
+      "type": "roq/kucoin_pro/json/MarginMode"
+    },
+    {
+      "name": "size",
+      "type": "std/double"
+    },
+    {
+      "name": "entryPrice",
+      "type": "std/double"
+    },
+    {
+      "name": "positionValue",
+      "type": "std/double"
+    },
+    {
+      "name": "markPrice",
+      "type": "std/double"
+    },
+    {
+      "name": "leverage",
+      "type": "std/double"
+    },
+    {
+      "name": "unrealizedPnL",
+      "type": "std/double"
+    },
+    {
+      "name": "realizedPnL",
+      "type": "std/double"
+    },
+    {
+      "name": "initialMargin",
+      "type": "std/double"
+    },
+    {
+      "name": "mmr",
+      "type": "std/double"
+    },
+    {
+      "name": "maintenanceMargin",
+      "type": "std/double"
+    },
+    {
+      "name": "creationTime",
+      "type": "std/nanoseconds"
     }
   ]
 }

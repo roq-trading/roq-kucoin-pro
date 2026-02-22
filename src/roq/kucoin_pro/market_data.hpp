@@ -87,6 +87,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   void operator()(Trace<json::OBU> const &) override;
 
   void operator()(Trace<json::Balance> const &) override;
+  void operator()(Trace<json::PositionAll> const &) override;
   void operator()(Trace<json::OrderAll> const &) override;
 
   void check_subscribe_queue(std::chrono::nanoseconds now);

@@ -483,7 +483,9 @@ Outbound
 Comments
 --------
 
+* Only support for UNIFIED mode
 * REST order cancel + cancel-all doesn't work
+* WS doesn't currently support the execution stream (asof 2026-02-22)
 
 
 References

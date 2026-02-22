@@ -29,7 +29,7 @@
 #include "roq/kucoin_pro/json/token.hpp"
 
 #include "roq/kucoin_pro/json/account_ack.hpp"
-#include "roq/kucoin_pro/json/fills_ack.hpp"
+#include "roq/kucoin_pro/json/execution_ack.hpp"
 #include "roq/kucoin_pro/json/orders_ack.hpp"
 #include "roq/kucoin_pro/json/position_ack.hpp"
 
@@ -116,11 +116,11 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   void get_orders_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<json::OrdersAck> const &);
 
-  // fills
+  // execution
 
-  void get_fills();
-  void get_fills_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::FillsAck> const &);
+  void get_execution();
+  void get_execution_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void operator()(Trace<json::ExecutionAck> const &);
 
   // add-order
 
@@ -181,7 +181,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
         account, account_ack,                                  //
         position, position_ack,                                //
         orders, orders_ack,                                    //
-        fills, fills_ack,                                      //
+        execution, execution_ack,                              //
         create_order, create_order_ack,                        //
         cancel_order, cancel_order_ack,                        //
         cancel_all_orders, cancel_all_orders_ack,              //

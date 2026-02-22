@@ -26,10 +26,11 @@ depth.hpp
 display_type.hpp
 error.hpp
 event_type.hpp
+execution_ack_data_items_item.hpp
+execution_ack_data.hpp
+execution_ack.hpp
 fee_type.hpp
-fills_ack_data_items_item.hpp
-fills_ack_data.hpp
-fills_ack.hpp
+fill_type.hpp
 instance_server.hpp
 instrument_ack_data.hpp
 instrument_ack_data_list_item.hpp
@@ -54,6 +55,8 @@ order_update_type.hpp
 pong.hpp
 position_ack_data_item.hpp
 position_ack.hpp
+position_all_data.hpp
+position_all.hpp
 position_side.hpp
 price_type.hpp
 quantity_unit.hpp
@@ -111,10 +114,11 @@ depth.cpp
 display_type.cpp
 error.cpp
 event_type.cpp
+execution_ack_data_items_item.cpp
+execution_ack_data.cpp
+execution_ack.cpp
 fee_type.cpp
-fills_ack_data_items_item.cpp
-fills_ack_data.cpp
-fills_ack.cpp
+fill_type.cpp
 instance_server.cpp
 instrument_ack_data.cpp
 instrument_ack_data_list_item.cpp
@@ -139,6 +143,8 @@ order_update_type.cpp
 pong.cpp
 position_ack_data_item.cpp
 position_ack.cpp
+position_all_data.cpp
+position_all.cpp
 position_side.cpp
 price_type.cpp
 quantity_unit.cpp

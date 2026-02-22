@@ -1,5 +1,5 @@
 {
-  "name": "roq/kucoin_pro/json/FillsAck",
+  "name": "roq/kucoin_pro/json/ExecutionAck",
   "type": "dictionary",
   "values": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "name": "data",
-      "type": "roq/kucoin_pro/json/FillsAckData"
+      "type": "roq/kucoin_pro/json/ExecutionAckData"
     }
   ]
 }

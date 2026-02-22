@@ -81,6 +81,9 @@ bool Parser::dispatch(
           case BALANCE_UNIFIED:
             result = dispatch_helper<Balance>(handler, message, buffer_stack, trace_info);
             return true;
+          case POSITION_ALL_UNIFIED:
+            result = dispatch_helper<PositionAll>(handler, message, buffer_stack, trace_info);
+            return true;
           case ORDER_ALL_UNIFIED:
             result = dispatch_helper<OrderAll>(handler, message, buffer_stack, trace_info);
             return true;

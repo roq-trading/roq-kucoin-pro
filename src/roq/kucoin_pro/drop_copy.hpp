@@ -87,6 +87,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   void operator()(Trace<json::OBU> const &) override;
 
   void operator()(Trace<json::Balance> const &) override;
+  void operator()(Trace<json::PositionAll> const &) override;
   void operator()(Trace<json::OrderAll> const &) override;
 
  private:
@@ -106,7 +107,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   } counter_;
   struct {
     utils::metrics::Profile parse,  //
-        welcome, error, pong, ack, balance, order_all;
+        welcome, error, pong, ack, balance, position_all, order_all;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;

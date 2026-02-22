@@ -1,5 +1,5 @@
 {
-  "name": "roq/kucoin_pro/json/FillsAckData",
+  "name": "roq/kucoin_pro/json/ExecutionAckData",
   "type": "dictionary",
   "values": [
     {
@@ -11,7 +11,7 @@
     },
     {
       "name": "items",
-      "type": "roq/kucoin_pro/json/FillsAckData",
+      "type": "roq/kucoin_pro/json/ExecutionAckDataItemsItem",
       "array": "std/span"
     }
   ]

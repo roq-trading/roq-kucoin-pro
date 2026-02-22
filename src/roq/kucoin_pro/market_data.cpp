@@ -511,6 +511,10 @@ void MarketData::operator()(Trace<json::Balance> const &) {
   log::fatal("Unexpected"sv);
 }
 
+void MarketData::operator()(Trace<json::PositionAll> const &) {
+  log::fatal("Unexpected"sv);
+}
+
 void MarketData::operator()(Trace<json::OrderAll> const &) {
   log::fatal("Unexpected"sv);
 }
