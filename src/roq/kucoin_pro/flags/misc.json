@@ -21,6 +21,12 @@
       "type": "std/bool",
       "default": false,
       "description": "Use the 'ticker' channel for top of book?"
+    },
+    {
+      "name": "experimental_enable_mbp",
+      "type": "std/bool",
+      "default": false,
+      "description": "TEST"
     }
   ]
 }

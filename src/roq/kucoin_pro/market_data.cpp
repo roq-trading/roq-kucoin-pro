@@ -229,7 +229,7 @@ void MarketData::subscribe(std::span<Symbol const> const &symbols) {
   }
   subscribe(shared_.api.trade, symbols);
   // XXX FIXME TODO only if has master account !!!
-  if (false) {
+  if (shared_.settings.misc.experimental_enable_mbp) {
     subscribe(shared_.api.obu, symbols, "increment"sv);  // full depth
   }
 }
