@@ -27,6 +27,13 @@
       "type": "std/bool",
       "default": false,
       "description": "TEST"
+    },
+    {
+      "name": "experimental_simulate_expired_token",
+      "type": "std/nanoseconds",
+      "validator": "roq/flags/validators/TimePeriod",
+      "default": "0s",
+      "description": "Simulate disconnect"
     }
   ]
 }

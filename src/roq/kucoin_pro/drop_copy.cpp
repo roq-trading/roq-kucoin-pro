@@ -32,6 +32,8 @@ auto const SUPPORTS = Mask{
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
+
+auto const PING_FREQUENCY = 60s;
 }  // namespace
 
 // === HELPERS ===
@@ -72,9 +74,10 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, std::string_view const &query)
+DropCopy::DropCopy(
+    Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request, std::string_view const &query)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account)}, query_{query},
-      connection_{create_connection(*this, shared.settings, context)}, ping_frequency_{60s},
+      connection_{create_connection(*this, shared.settings, context)}, ping_frequency_{PING_FREQUENCY},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -93,7 +96,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
-      account_{account}, shared_{shared}, download_{{}, [this](auto state) { return download(state); }} {
+      account_{account}, shared_{shared}, request_{request}, download_{{}, [this](auto state) { return download(state); }} {
 }
 
 bool DropCopy::ready() const {
@@ -122,6 +125,12 @@ void DropCopy::operator()(Event<Timer> const &event) {
     log::warn("Did not receive the welcome message, disconnecting now..."sv);
     (*connection_).close();
   }
+  check_response_private_token();
+  // DEBUG
+  if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < now) {
+    next_simulated_disconnect_ = {};
+    request_private_token();
+  }
 }
 
 void DropCopy::operator()(metrics::Writer &writer) const {
@@ -146,6 +155,7 @@ void DropCopy::operator()(PrivateToken const &private_token) {
   if (!std::empty(private_token.query) && query_ != private_token.query) {
     query_ = private_token.query;
     log::warn(R"(DEBUG private_token="{}")"sv, query_);
+    (*connection_).resume();
   }
 }
 
@@ -153,6 +163,10 @@ void DropCopy::operator()(web::socket::Client::Connected const &) {
   assert(logon_timeout_.count() == 0);
   auto now = clock::get_system();
   logon_timeout_ = now + shared_.settings.ws.request_timeout;
+  // DEBUG
+  if (shared_.settings.misc.experimental_simulate_expired_token.count()) {
+    next_simulated_disconnect_ = now + shared_.settings.misc.experimental_simulate_expired_token;
+  }
 }
 
 void DropCopy::operator()(web::socket::Client::Disconnected const &) {
@@ -313,6 +327,10 @@ void DropCopy::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::error("error={}"sv, error);
+    // XXX FIXME TODO this was carried over from roq-kucoin-futures -- check data
+    if (error.code == 401 && error.data == "token is expired"sv) {
+      request_private_token();
+    }
   });
 }
 
@@ -361,6 +379,24 @@ void DropCopy::operator()(Trace<json::OrderAll> const &event) {
     auto &[message_info, order_all] = event;
     log::warn("DEBUG order_all={}"sv, order_all);
   });
+}
+
+void DropCopy::check_response_private_token() {
+  if (download_private_token_ && request_.request_private_token < request_.respond_private_token) {
+    download_private_token_ = false;
+    log::warn("GOT PRIVATE TOKEN"sv);
+  }
+}
+
+void DropCopy::request_private_token() {
+  if (std::empty(query_)) {
+    return;
+  }
+  log::warn("REQUEST PRIVATE TOKEN"sv);
+  query_.clear();
+  (*connection_).suspend(60s);
+  request_.request_private_token = clock::get_system();
+  download_private_token_ = true;
 }
 
 }  // namespace kucoin_pro

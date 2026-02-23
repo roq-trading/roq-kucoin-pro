@@ -19,6 +19,7 @@
 #include "roq/kucoin_pro/market_data.hpp"
 #include "roq/kucoin_pro/order_entry_rest.hpp"
 #include "roq/kucoin_pro/order_entry_ws.hpp"
+#include "roq/kucoin_pro/request.hpp"
 #include "roq/kucoin_pro/rest.hpp"
 #include "roq/kucoin_pro/settings.hpp"
 #include "roq/kucoin_pro/shared.hpp"
@@ -104,6 +105,7 @@ struct Gateway final : public server::Handler,
   server::Dispatcher &dispatcher_;
   // accounts
   utils::unordered_map<std::string, std::unique_ptr<Account>> const accounts_;
+  utils::unordered_map<std::string, Request> request_;
   // io
   io::Context &context_;
   // shared
