@@ -201,7 +201,6 @@ void OrderEntryREST::operator()(Trace<web::rest::Client::Connected> const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
-    (*this)(ConnectionStatus::DOWNLOADING);
     download_.begin();
   }
 }
@@ -226,26 +225,26 @@ void OrderEntryREST::operator()(Trace<web::rest::Client::Latency> const &event) 
   latency_.ping.update(latency.sample);
 }
 
-void OrderEntryREST::operator()(ConnectionStatus status) {
-  if (utils::update(status_, status)) {
-    TraceInfo trace_info;
-    auto stream_status = StreamStatus{
-        .stream_id = stream_id_,
-        .account = account_.name,
-        .supports = SUPPORTS,
-        .transport = Transport::TCP,
-        .protocol = Protocol::HTTP,
-        .encoding = {Encoding::JSON},
-        .priority = Priority::PRIMARY,
-        .connection_status = status_,
-        .interface = (*connection_).get_interface(),
-        .authority = (*connection_).get_current_authority(),
-        .path = (*connection_).get_current_path(),
-        .proxy = (*connection_).get_proxy(),
-    };
-    log::info("stream_status={}"sv, stream_status);
-    create_trace_and_dispatch(handler_, trace_info, stream_status);
-  }
+void OrderEntryREST::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+  connection_status_ = connection_status;
+  TraceInfo trace_info;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::HTTP,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 uint32_t OrderEntryREST::download(OrderEntryState state) {
@@ -256,22 +255,27 @@ uint32_t OrderEntryREST::download(OrderEntryState state) {
       break;
     case PRIVATE_TOKEN:
       if (!has_downloaded_private_token_) {
+        (*this)(ConnectionStatus::DOWNLOADING, "private-token"sv);
         get_private_token();
         return 1;
       } else {
         return 0;
       }
     case ACCOUNT:
+      (*this)(ConnectionStatus::DOWNLOADING, "account"sv);
       get_account();
       return 1;
     case POSITION:
+      (*this)(ConnectionStatus::DOWNLOADING, "position"sv);
       get_position();
       return 1;
     case ORDERS:
+      (*this)(ConnectionStatus::DOWNLOADING, "orders"sv);
       get_orders();
       return 1;
     case EXECUTION:
       if (shared_.settings.download.trades_lookback.count()) {
+        (*this)(ConnectionStatus::DOWNLOADING, "execution"sv);
         get_execution();
         return 1;
       } else {

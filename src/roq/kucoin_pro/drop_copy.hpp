@@ -65,7 +65,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   std::string_view get_query() const override { return query_; }
 
  private:
-  void operator()(ConnectionStatus);
+  void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   uint32_t download(DropCopyState);
 
@@ -124,7 +124,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   // state
   bool welcome_ = false;
   bool ready_ = false;
-  ConnectionStatus status_ = {};
+  ConnectionStatus connection_status_ = {};
   core::Download<DropCopyState> download_;
   std::chrono::nanoseconds logon_timeout_ = {};
   std::chrono::nanoseconds next_ping_ = {};
