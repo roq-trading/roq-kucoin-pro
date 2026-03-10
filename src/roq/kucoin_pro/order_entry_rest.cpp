@@ -306,7 +306,6 @@ void OrderEntryREST::get_private_token() {
         .body = {},
         .quality_of_service = io::QualityOfService::IMMEDIATE,
     };
-    log::warn("DEBUG request={}"sv, request);
     auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -353,7 +352,6 @@ void OrderEntryREST::get_private_token_ack(Trace<web::rest::Response> const &eve
 void OrderEntryREST::operator()(Trace<json::Token> const &event) {
   auto &[trace_info, token] = event;
   log::info<2>("token={}"sv, token);
-  log::warn("DEBUG token={}"sv, token);
   auto query = fmt::format("?token={}"sv, token.data.token);
   auto private_token = PrivateToken{
       .account = account_.name,
@@ -397,7 +395,6 @@ void OrderEntryREST::get_account_ack(Trace<web::rest::Response> const &event, ui
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
@@ -476,7 +473,6 @@ void OrderEntryREST::get_position_ack(Trace<web::rest::Response> const &event, u
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
@@ -554,7 +550,6 @@ void OrderEntryREST::get_orders_ack(Trace<web::rest::Response> const &event, uin
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
@@ -669,7 +664,6 @@ void OrderEntryREST::get_execution_ack(Trace<web::rest::Response> const &event, 
       download_.retry(STATE);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG body={}"sv, body);
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
@@ -1038,7 +1032,6 @@ void OrderEntryREST::get_order_book_ack(Trace<web::rest::Response> const &event,
       // XXX WHAT ???
     };
     auto handle_success = [&](auto &body) {
-      // log::warn("DEBUG body={}"sv, body);
       json::OrderBookAck order_book_ack{body, decode_buffer_};
       if (order_book_ack.code == SYSTEM_CODE_SUCCESS) {
         Trace event_2{event, order_book_ack};

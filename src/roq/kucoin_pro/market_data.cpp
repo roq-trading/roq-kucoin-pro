@@ -306,7 +306,6 @@ void MarketData::operator()(Trace<json::Welcome> const &event) {
   profile_.welcome([&]() {
     auto &[trace_info, welcome] = event;
     log::info<1>("welcome={}"sv, welcome);
-    log::warn("DEBUG welcome={}"sv, welcome);
     (*connection_).touch(trace_info.source_receive_time);
     welcome_ = true;
     (*this)(ConnectionStatus::READY);

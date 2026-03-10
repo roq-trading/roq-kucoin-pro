@@ -203,7 +203,6 @@ void DropCopy::operator()(web::socket::Client::Text const &) {
 
 void DropCopy::operator()(web::socket::Client::Binary const &binary) {
   std::string_view payload{reinterpret_cast<char const *>(std::data(binary.payload)), std::size(binary.payload)};
-  log::warn("DEBUG {}"sv, payload);
   parse(payload);
 }
 
@@ -267,7 +266,6 @@ void DropCopy::subscribe_account(std::string_view const &channel) {
       R"(}})"sv,
       now.count(),
       channel);
-  log::warn("DEBUG {}"sv, message);
   (*connection_).send_text(message);
 }
 
@@ -282,7 +280,6 @@ void DropCopy::subscribe_trade(std::string_view const &channel) {
       R"(}})"sv,
       now.count(),
       channel);
-  log::warn("DEBUG {}"sv, message);
   (*connection_).send_text(message);
 }
 
@@ -300,7 +297,6 @@ void DropCopy::send_ping(std::chrono::nanoseconds now) {
 
 void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
-    log::warn("DEBUG {}"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
