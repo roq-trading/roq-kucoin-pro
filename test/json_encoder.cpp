@@ -59,6 +59,7 @@ TEST_CASE("create_market", "[json_encoder]") {
       .leverage = NaN,
       .routing_id = {},
       .strategy_id = {},
+      .release_time_utc={},
   };
   server::oms::Order order;
   auto ref_data = create_ref_data();
@@ -98,6 +99,7 @@ TEST_CASE("create_limit", "[json_add_order]") {
       .leverage = NaN,
       .routing_id = {},
       .strategy_id = {},
+      .release_time_utc={},
   };
   server::oms::Order order;
   auto ref_data = create_ref_data();
@@ -139,6 +141,7 @@ TEST_CASE("create_ioc", "[json_add_order]") {
       .leverage = NaN,
       .routing_id = {},
       .strategy_id = {},
+      .release_time_utc={},
   };
   server::oms::Order order;
   auto ref_data = create_ref_data();
@@ -181,6 +184,7 @@ TEST_CASE("create_post_only", "[json_add_order]") {
       .leverage = NaN,
       .routing_id = {},
       .strategy_id = {},
+      .release_time_utc={},
   };
   server::oms::Order order;
   auto ref_data = create_ref_data();
