@@ -25,6 +25,10 @@
     {
       "name": "liability",
       "type": "std/double"
+    },
+    {
+      "name": "potentialBorrow",
+      "type": "std/double"
     }
   ]
 }
