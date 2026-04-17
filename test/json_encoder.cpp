@@ -13,6 +13,7 @@ using namespace std::chrono_literals;
 using namespace Catch::literals;
 
 namespace {
+/*
 auto create_ref_data() {
   auto ref_data = server::oms::RefData{
       .security_type = {},
@@ -32,6 +33,7 @@ auto create_ref_data() {
   };
   return ref_data;
 }
+*/
 }  // namespace
 
 // REST

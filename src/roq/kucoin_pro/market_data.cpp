@@ -426,7 +426,7 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
       create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
     };
     auto dispatch_market_by_price = [&]() {
-      auto first_sequence = data.start_sequence;
+      // auto first_sequence = data.start_sequence;
       auto last_sequence = data.end_sequence;
       auto previous_sequence = data.start_sequence - 1;  // ???
       auto &sequencer = shared_.mbp_sequencer[data.symbol];

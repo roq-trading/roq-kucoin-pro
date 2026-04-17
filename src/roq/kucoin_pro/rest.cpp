@@ -246,8 +246,10 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
 void Rest::operator()(Trace<json::CurrenciesAck> const &event) {
   auto &[trace_info, currencies_ack] = event;
   log::info<4>("currencies_ack={}"sv, currencies_ack);
+  /*
   for (auto &item : currencies_ack.data) {
   }
+  */
 }
 
 // instrument
