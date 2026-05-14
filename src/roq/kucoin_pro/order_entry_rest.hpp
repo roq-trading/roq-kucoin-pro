@@ -22,7 +22,6 @@
 
 #include "roq/kucoin_pro/account.hpp"
 #include "roq/kucoin_pro/order_entry.hpp"
-#include "roq/kucoin_pro/order_entry_state.hpp"
 #include "roq/kucoin_pro/private_token.hpp"
 #include "roq/kucoin_pro/request.hpp"
 #include "roq/kucoin_pro/shared.hpp"
@@ -91,7 +90,17 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(OrderEntryState state);
+  enum class State {
+    UNDEFINED = 0,
+    PRIVATE_TOKEN,
+    ACCOUNT,
+    POSITION,
+    ORDERS,
+    EXECUTION,
+    DONE,
+  };
+
+  uint32_t download(State);
 
   // private-token
 
@@ -200,7 +209,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
   Request &request_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<OrderEntryState> download_;
+  core::Download<State> download_;
   //
   std::string encode_buffer_;
   //

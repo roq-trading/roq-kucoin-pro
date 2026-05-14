@@ -22,7 +22,6 @@
 
 #include "roq/server.hpp"
 
-#include "roq/kucoin_pro/rest_state.hpp"
 #include "roq/kucoin_pro/shared.hpp"
 
 #include "roq/kucoin_pro/json/currencies_ack.hpp"
@@ -73,7 +72,14 @@ struct Rest final : public web::rest::Client::Handler {
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(RestState);
+  enum class State {
+    UNDEFINED = 0,
+    CURRENCIES,
+    INSTRUMENT,
+    DONE,
+  };
+
+  uint32_t download(State);
 
   // currencies
 
@@ -115,7 +121,7 @@ struct Rest final : public web::rest::Client::Handler {
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<RestState> download_;
+  core::Download<State> download_;
 };
 
 }  // namespace kucoin_pro
