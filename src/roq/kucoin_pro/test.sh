@@ -6,7 +6,7 @@ else
   PREFIX=
 fi
 
-NAME="kucoin-futures"
+NAME="kucoin-pro"
 
 CONFIG="${CONFIG:-$NAME-test}"
 
