@@ -15,14 +15,15 @@
 
 #include "roq/kucoin_pro/account.hpp"
 #include "roq/kucoin_pro/config.hpp"
+#include "roq/kucoin_pro/request.hpp"
+#include "roq/kucoin_pro/settings.hpp"
+#include "roq/kucoin_pro/shared.hpp"
+
 #include "roq/kucoin_pro/drop_copy.hpp"
 #include "roq/kucoin_pro/market_data.hpp"
 #include "roq/kucoin_pro/order_entry_rest.hpp"
 #include "roq/kucoin_pro/order_entry_ws.hpp"
-#include "roq/kucoin_pro/request.hpp"
 #include "roq/kucoin_pro/rest.hpp"
-#include "roq/kucoin_pro/settings.hpp"
-#include "roq/kucoin_pro/shared.hpp"
 
 namespace roq {
 namespace kucoin_pro {
@@ -38,6 +39,8 @@ struct Gateway final : public server::Handler,
   Gateway(Gateway const &) = delete;
 
  protected:
+  // server::Handler
+
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
   void operator()(Event<Timer> const &) override;
@@ -69,7 +72,7 @@ struct Gateway final : public server::Handler,
 
   void operator()(metrics::Writer &) const override;
 
-  // many
+  // streams
 
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
@@ -87,9 +90,9 @@ struct Gateway final : public server::Handler,
 
   void operator()(PrivateToken const &) override;
 
-  void ensure_symbol_slices(size_t size);
-
   // utilities
+
+  void ensure_symbol_slices(size_t size);
 
   template <typename... Args>
   void dispatch(Args &&...);
