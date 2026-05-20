@@ -4,10 +4,11 @@
 
 #include <string_view>
 
-#include "roq/kucoin_pro/settings.hpp"
+#include "roq/kucoin_pro/gateway/settings.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 struct API final {
   struct {
@@ -45,5 +46,6 @@ struct API final {
   static API create(Settings const &);
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

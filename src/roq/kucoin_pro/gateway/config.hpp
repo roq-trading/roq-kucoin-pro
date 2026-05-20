@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/compat.hpp"
+
 #include <fmt/ranges.h>
 
 #include <string>
@@ -14,12 +16,13 @@
 #include "roq/server/config/dispatcher.hpp"
 #include "roq/server/config/reader.hpp"
 
-#include "roq/kucoin_pro/settings.hpp"
+#include "roq/kucoin_pro/gateway/settings.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
-struct Config final : public server::config::Dispatcher, public server::config::Reader::Handler {
+struct ROQ_PUBLIC Config final : public server::config::Dispatcher, public server::config::Reader::Handler {
   explicit Config(Settings const &);
 
   Config(Config const &) = delete;
@@ -55,13 +58,14 @@ struct Config final : public server::config::Dispatcher, public server::config::
   server::config::RateLimits rate_limits;
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq
 
 template <>
-struct fmt::formatter<roq::kucoin_pro::Config> {
+struct fmt::formatter<roq::kucoin_pro::gateway::Config> {
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
-  auto format(roq::kucoin_pro::Config const &value, format_context &context) const {
+  auto format(roq::kucoin_pro::gateway::Config const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),

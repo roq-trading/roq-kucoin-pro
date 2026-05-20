@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/kucoin_pro/account.hpp"
+#include "roq/kucoin_pro/gateway/account.hpp"
 
 #include "roq/utils/safe_cast.hpp"
 
@@ -8,6 +8,7 @@
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 // === IMPLEMENTATION ===
 
@@ -29,5 +30,6 @@ std::string Account::create_ws_auth(std::string_view const &message) {
   return crypto_.create_ws_auth(message);
 }
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

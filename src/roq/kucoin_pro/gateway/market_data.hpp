@@ -22,12 +22,13 @@
 
 #include "roq/server.hpp"
 
-#include "roq/kucoin_pro/shared.hpp"
+#include "roq/kucoin_pro/gateway/shared.hpp"
 
 #include "roq/kucoin_pro/json/parser.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 struct MarketData final : public web::socket::Client::Handler, public json::Parser::Handler {
   struct Handler {
@@ -124,5 +125,6 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   core::TimerQueue<std::string> subscribe_queue_;
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

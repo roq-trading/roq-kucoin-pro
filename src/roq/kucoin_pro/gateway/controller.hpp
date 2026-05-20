@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/compat.hpp"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,30 +15,35 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/kucoin_pro/account.hpp"
-#include "roq/kucoin_pro/config.hpp"
-#include "roq/kucoin_pro/request.hpp"
-#include "roq/kucoin_pro/settings.hpp"
-#include "roq/kucoin_pro/shared.hpp"
+#include "roq/kucoin_pro/gateway/account.hpp"
+#include "roq/kucoin_pro/gateway/config.hpp"
+#include "roq/kucoin_pro/gateway/request.hpp"
+#include "roq/kucoin_pro/gateway/settings.hpp"
+#include "roq/kucoin_pro/gateway/shared.hpp"
 
-#include "roq/kucoin_pro/drop_copy.hpp"
-#include "roq/kucoin_pro/market_data.hpp"
-#include "roq/kucoin_pro/order_entry_rest.hpp"
-#include "roq/kucoin_pro/order_entry_ws.hpp"
-#include "roq/kucoin_pro/rest.hpp"
+#include "roq/kucoin_pro/gateway/drop_copy.hpp"
+#include "roq/kucoin_pro/gateway/market_data.hpp"
+#include "roq/kucoin_pro/gateway/order_entry_rest.hpp"
+#include "roq/kucoin_pro/gateway/order_entry_ws.hpp"
+#include "roq/kucoin_pro/gateway/rest.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
-struct Gateway final : public server::Handler,
-                       public Rest::Handler,
-                       public OrderEntryREST::Handler,
-                       public OrderEntryWS::Handler,
-                       public DropCopy::Handler,
-                       public MarketData::Handler {
-  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+struct Controller final : public server::Handler,
+                          public Rest::Handler,
+                          public OrderEntryREST::Handler,
+                          public OrderEntryWS::Handler,
+                          public DropCopy::Handler,
+                          public MarketData::Handler {
+  ROQ_PUBLIC static std::unique_ptr<server::Handler> create(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
-  Gateway(Gateway const &) = delete;
+  Controller(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+
+  Controller(Controller const &) = delete;
+
+  virtual ~Controller() = default;
 
  protected:
   // server::Handler
@@ -125,5 +132,6 @@ struct Gateway final : public server::Handler,
   std::vector<MBPUpdate> bids_, asks_;
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

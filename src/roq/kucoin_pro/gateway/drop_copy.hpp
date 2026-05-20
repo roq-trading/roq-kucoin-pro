@@ -19,15 +19,16 @@
 
 #include "roq/server.hpp"
 
-#include "roq/kucoin_pro/account.hpp"
-#include "roq/kucoin_pro/private_token.hpp"
-#include "roq/kucoin_pro/request.hpp"
-#include "roq/kucoin_pro/shared.hpp"
+#include "roq/kucoin_pro/gateway/account.hpp"
+#include "roq/kucoin_pro/gateway/private_token.hpp"
+#include "roq/kucoin_pro/gateway/request.hpp"
+#include "roq/kucoin_pro/gateway/shared.hpp"
 
 #include "roq/kucoin_pro/json/parser.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 struct DropCopy final : public web::socket::Client::Handler, public json::Parser::Handler {
   struct Handler {
@@ -139,5 +140,6 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   std::chrono::nanoseconds next_simulated_disconnect_ = {};
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

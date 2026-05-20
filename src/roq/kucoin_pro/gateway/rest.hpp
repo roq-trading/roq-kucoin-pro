@@ -22,13 +22,14 @@
 
 #include "roq/server.hpp"
 
-#include "roq/kucoin_pro/shared.hpp"
+#include "roq/kucoin_pro/gateway/shared.hpp"
 
 #include "roq/kucoin_pro/json/currencies_ack.hpp"
 #include "roq/kucoin_pro/json/instrument_ack.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 struct Rest final : public web::rest::Client::Handler {
   struct PublicToken final {
@@ -124,5 +125,6 @@ struct Rest final : public web::rest::Client::Handler {
   core::Download<State> download_;
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

@@ -7,12 +7,13 @@
 
 #include "roq/web/http/method.hpp"
 
-#include "roq/kucoin_pro/config.hpp"
+#include "roq/kucoin_pro/gateway/config.hpp"
 
 #include "roq/kucoin_pro/tools/crypto.hpp"
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 struct Account final {
   Account(Config const &, std::string_view const &name);
@@ -31,5 +32,6 @@ struct Account final {
   tools::Crypto crypto_;
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

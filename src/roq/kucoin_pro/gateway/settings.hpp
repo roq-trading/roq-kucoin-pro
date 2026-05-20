@@ -6,8 +6,10 @@
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 using Settings = flags::Settings;
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

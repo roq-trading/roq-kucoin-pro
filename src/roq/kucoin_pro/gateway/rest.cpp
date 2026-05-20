@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/kucoin_pro/rest.hpp"
+#include "roq/kucoin_pro/gateway/rest.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -21,6 +21,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -398,5 +399,6 @@ void Rest::process_response(web::rest::Response const &response, auto error_hand
   }
 }
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

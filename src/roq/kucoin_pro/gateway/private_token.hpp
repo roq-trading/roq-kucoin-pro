@@ -7,11 +7,13 @@
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 struct PrivateToken final {
   std::string_view account;
   std::string_view query;
 };
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq

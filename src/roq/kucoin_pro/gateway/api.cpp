@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/kucoin_pro/api.hpp"
+#include "roq/kucoin_pro/gateway/api.hpp"
 
 #include "roq/exceptions.hpp"
 
@@ -8,6 +8,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace kucoin_pro {
+namespace gateway {
 
 // === IMPLEMENTATION ===
 
@@ -46,5 +47,6 @@ API API::create(Settings const &) {
   };
 }
 
+}  // namespace gateway
 }  // namespace kucoin_pro
 }  // namespace roq
