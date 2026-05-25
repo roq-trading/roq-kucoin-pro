@@ -13,9 +13,8 @@
 .. |footnote-3| unicode:: U+2778
 
 
-roq-kucoin-pro
-==============
-
+`roq-kucoin-pro <https://github.com/roq-trading/roq-kucoin-pro/>`__
+===================================================================
 
 .. tab:: Unstable
 
@@ -499,6 +498,12 @@ Common
 * :ref:`Using Flags <abseil-cpp>`
 * :ref:`Gateway Flags <gateway-flags>`
 * :ref:`Gateway Config <gateway-config>`
+
+
+GitHub
+~~~~~~
+
+* `roq-kucoin-pro <https://github.com/roq-trading/roq-kucoin-pro/>`__
 
 
 Exchange
