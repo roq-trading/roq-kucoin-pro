@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::PositionAll;
+using value_type = protocol::json::PositionAll;
 
 TEST_CASE("simple", "[json_position_all]") {
   auto message = R"({)"
@@ -36,7 +36,7 @@ TEST_CASE("simple", "[json_position_all]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::POSITION_ALL_UNIFIED);
+    CHECK(obj.channel == protocol::json::Channel::POSITION_ALL_UNIFIED);
     CHECK(obj.push_time == 1771761913787998066ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

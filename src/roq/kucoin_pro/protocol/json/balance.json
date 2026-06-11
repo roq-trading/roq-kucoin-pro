@@ -1,0 +1,21 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/Balance",
+  "type": "dictionary",
+  "values": [
+    {
+      "raw": "T",
+      "name": "channel",
+      "type": "roq/kucoin_pro/protocol/json/Channel"
+    },
+    {
+      "raw": "P",
+      "name": "push_time",
+      "type": "std/nanoseconds"
+    },
+    {
+      "raw": "d",
+      "name": "data",
+      "type": "roq/kucoin_pro/protocol/json/BalanceData"
+    }
+  ]
+}

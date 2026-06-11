@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::WSAddOrderAck;
+using value_type = protocol::json::WSAddOrderAck;
 
 TEST_CASE("success", "[json_ws_add_order_ack]") {
   auto message = R"({)"
@@ -27,11 +27,11 @@ TEST_CASE("success", "[json_ws_add_order_ack]") {
                  R"(})";
   auto helper = [](value_type const &obj) {
     CHECK(obj.id == "4wACJpW38FMAAQAAAAAA"sv);
-    CHECK(obj.op == json::WSOp::ADD_ORDER_ACK);
+    CHECK(obj.op == protocol::json::WSOp::ADD_ORDER_ACK);
     CHECK(obj.code == 200000);
     auto &data = obj.data;
     CHECK(data.order_id == "414936156380143616"sv);
-    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.trade_type == protocol::json::TradeType::FUTURES);
     CHECK(data.ts == 1771741690837000000ns);
     CHECK(data.client_oid == "4wACJpW38FMAAQAAAAAA"sv);
   };

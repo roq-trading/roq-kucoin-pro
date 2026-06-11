@@ -1,0 +1,12 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/TriggerDirection",
+  "type": "enum",
+  "values": [
+    {
+      "name": "DOWN"
+    },
+    {
+      "name": "UP"
+    }
+  ]
+}

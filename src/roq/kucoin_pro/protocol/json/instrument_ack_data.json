@@ -1,0 +1,15 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/InstrumentAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "tradeType",
+      "type": "roq/kucoin_pro/protocol/json/TradeType"
+    },
+    {
+      "name": "list",
+      "type": "roq/kucoin_pro/protocol/json/InstrumentAckDataListItem",
+      "array": "std/span"
+    }
+  ]
+}

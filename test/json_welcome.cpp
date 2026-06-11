@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::Welcome;
+using value_type = protocol::json::Welcome;
 
 TEST_CASE("simple", "[json_welcome]") {
   auto message = R"({)"

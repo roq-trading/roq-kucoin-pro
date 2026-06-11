@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_pro/json/account_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/account_ack.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
@@ -13,7 +13,7 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using value_type = json::AccountAck;
+using value_type = protocol::json::AccountAck;
 
 TEST_CASE("simple", "[json_account_ack]") {
   auto const message = R"({)"
@@ -38,7 +38,7 @@ TEST_CASE("simple", "[json_account_ack]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200000);
     auto &data = obj.data;
-    CHECK(data.account_type == json::AccountType::UNIFIED);
+    CHECK(data.account_type == protocol::json::AccountType::UNIFIED);
     CHECK(data.ts == 1771667355929ms);
     REQUIRE(std::size(data.accounts) == 1);
     auto &a0 = data.accounts[0];

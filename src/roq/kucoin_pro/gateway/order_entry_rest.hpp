@@ -26,18 +26,18 @@
 #include "roq/kucoin_pro/gateway/request.hpp"
 #include "roq/kucoin_pro/gateway/shared.hpp"
 
-#include "roq/kucoin_pro/json/token.hpp"
+#include "roq/kucoin_pro/protocol/json/token.hpp"
 
-#include "roq/kucoin_pro/json/account_ack.hpp"
-#include "roq/kucoin_pro/json/execution_ack.hpp"
-#include "roq/kucoin_pro/json/orders_ack.hpp"
-#include "roq/kucoin_pro/json/position_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/account_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/execution_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/orders_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/position_ack.hpp"
 
-#include "roq/kucoin_pro/json/add_order_ack.hpp"
-#include "roq/kucoin_pro/json/cancel_all_orders_ack.hpp"
-#include "roq/kucoin_pro/json/cancel_order_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/add_order_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/cancel_all_orders_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/cancel_order_ack.hpp"
 
-#include "roq/kucoin_pro/json/order_book_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/order_book_ack.hpp"
 
 namespace roq {
 namespace kucoin_pro {
@@ -107,37 +107,37 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void get_private_token();
   void get_private_token_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::Token> const &);
+  void operator()(Trace<protocol::json::Token> const &);
 
   // account
 
   void get_account();
   void get_account_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::AccountAck> const &);
+  void operator()(Trace<protocol::json::AccountAck> const &);
 
   // position
 
   void get_position();
   void get_position_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::PositionAck> const &);
+  void operator()(Trace<protocol::json::PositionAck> const &);
 
   // orders
 
   void get_orders();
   void get_orders_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::OrdersAck> const &);
+  void operator()(Trace<protocol::json::OrdersAck> const &);
 
   // execution
 
   void get_execution();
   void get_execution_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::ExecutionAck> const &);
+  void operator()(Trace<protocol::json::ExecutionAck> const &);
 
   // add-order
 
   void create_order(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id);
   void create_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
-  void operator()(Trace<json::AddOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<protocol::json::AddOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
 
   // cancel-order
 
@@ -148,19 +148,19 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
       std::string_view const &request_id,
       std::string_view const &previous_request_id);
   void cancel_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
-  void operator()(Trace<json::CancelOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<protocol::json::CancelOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
 
   // cancel-all-orders
 
   void cancel_all_orders(Event<CancelAllOrders> const &, std::string_view const &request_id);
   void cancel_all_orders_ack(Trace<web::rest::Response> const &, std::string_view const &request_id);
-  void operator()(Trace<json::CancelAllOrdersAck> const &);
+  void operator()(Trace<protocol::json::CancelAllOrdersAck> const &);
 
   // order-book
 
   void get_order_book(std::string_view const &symbol);
   void get_order_book_ack(Trace<web::rest::Response> const &, std::string_view const &symbol);
-  void operator()(Trace<json::OrderBookAck> const &);
+  void operator()(Trace<protocol::json::OrderBookAck> const &);
 
   // helpers
 

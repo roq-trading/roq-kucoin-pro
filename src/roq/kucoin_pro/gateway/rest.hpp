@@ -24,8 +24,8 @@
 
 #include "roq/kucoin_pro/gateway/shared.hpp"
 
-#include "roq/kucoin_pro/json/currencies_ack.hpp"
-#include "roq/kucoin_pro/json/instrument_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/currencies_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/instrument_ack.hpp"
 
 namespace roq {
 namespace kucoin_pro {
@@ -86,13 +86,13 @@ struct Rest final : public web::rest::Client::Handler {
 
   void get_currencies();
   void get_currencies_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::CurrenciesAck> const &);
+  void operator()(Trace<protocol::json::CurrenciesAck> const &);
 
   // instrument
 
   void get_instrument();
   void get_instrument_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::InstrumentAck> const &);
+  void operator()(Trace<protocol::json::InstrumentAck> const &);
 
   // helpers
 

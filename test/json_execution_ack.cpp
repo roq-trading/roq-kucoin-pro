@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_pro/json/execution_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/execution_ack.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
@@ -13,7 +13,7 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using value_type = json::ExecutionAck;
+using value_type = protocol::json::ExecutionAck;
 
 TEST_CASE("empty", "[json_execution_ack]") {
   auto const message = R"({)"
@@ -27,7 +27,7 @@ TEST_CASE("empty", "[json_execution_ack]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200000);
     auto &data = obj.data;
-    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.trade_type == protocol::json::TradeType::FUTURES);
     // CHECK(data.last_id ==
     REQUIRE(std::empty(data.items));
   };
@@ -64,7 +64,7 @@ TEST_CASE("simple", "[json_execution_ack]") {
   auto helper = [&](value_type &obj) {
     CHECK(obj.code == 200000);
     auto &data = obj.data;
-    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.trade_type == protocol::json::TradeType::FUTURES);
     // CHECK(data.last_id ==
     REQUIRE(std::size(data.items) == 1);
   };

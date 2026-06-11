@@ -1,0 +1,33 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/CurrencyAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "currency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "name",
+      "type": "std/string_view"
+    },
+    {
+      "name": "fullName",
+      "type": "std/string_view"
+    },
+    {
+      "name": "precision",
+      "type": "std/int32"
+    },
+    {
+      "name": "confirms"
+    },
+    {
+      "name": "contractAddress"
+    },
+    {
+      "name": "list",
+      "type": "roq/kucoin_pro/protocol/json/CurrencyAckDataListItem",
+      "array": "std/span"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/EventType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "OPEN"
+    },
+    {
+      "name": "UPDATE"
+    },
+    {
+      "name": "FILL"
+    },
+    {
+      "name": "CANCEL"
+    },
+    {
+      "name": "TRIGGER"
+    },
+    {
+      "name": "MATCH"
+    }
+  ]
+}

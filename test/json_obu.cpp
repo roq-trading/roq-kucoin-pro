@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::OBU;
+using value_type = protocol::json::OBU;
 
 TEST_CASE("bbo", "[json_obu]") {
   auto message = R"({)"
@@ -31,9 +31,9 @@ TEST_CASE("bbo", "[json_obu]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::OBU_FUTURES);
-    CHECK(obj.depth == json::Depth::ONE);
-    CHECK(obj.update_type == json::UpdateType::SNAPSHOT);
+    CHECK(obj.channel == protocol::json::Channel::OBU_FUTURES);
+    CHECK(obj.depth == protocol::json::Depth::ONE);
+    CHECK(obj.update_type == protocol::json::UpdateType::SNAPSHOT);
     CHECK(obj.push_time == 1771602678625085376ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -58,9 +58,9 @@ TEST_CASE("increment", "[json_obu]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::OBU_FUTURES);
-    CHECK(obj.depth == json::Depth::INCREMENT);
-    CHECK(obj.update_type == json::UpdateType::DELTA);
+    CHECK(obj.channel == protocol::json::Channel::OBU_FUTURES);
+    CHECK(obj.depth == protocol::json::Depth::INCREMENT);
+    CHECK(obj.update_type == protocol::json::UpdateType::DELTA);
     CHECK(obj.push_time == 1771600803304460569ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

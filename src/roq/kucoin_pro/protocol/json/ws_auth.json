@@ -1,0 +1,14 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/WSAuth",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "sessionId",
+      "type": "std/string_view"
+    },
+    {
+      "name": "timestamp",
+      "type": "std/milliseconds"
+    }
+  ]
+}

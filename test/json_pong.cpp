@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::Pong;
+using value_type = protocol::json::Pong;
 
 TEST_CASE("simple", "[json_pong]") {
   auto message = R"({)"
@@ -18,7 +18,7 @@ TEST_CASE("simple", "[json_pong]") {
                  R"("ts":1771580331134146844)"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.type == json::Type::PONG);
+    CHECK(obj.type == protocol::json::Type::PONG);
     CHECK(obj.id == 366142583719543);
     CHECK(obj.ts == 1771580331134146844ns);
   };

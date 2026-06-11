@@ -4,14 +4,14 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_pro/json/currency_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/currency_ack.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::CurrencyAck;
+using value_type = protocol::json::CurrencyAck;
 
 // note! truncated
 TEST_CASE("simple", "[json_currency_ack]") {

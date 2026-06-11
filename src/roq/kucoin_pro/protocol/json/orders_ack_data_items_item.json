@@ -1,0 +1,134 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/OrdersAckDataItemsItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "orderId",
+      "type": "std/string_view"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "orderType",
+      "type": "roq/kucoin_pro/protocol/json/OrderType"
+    },
+    {
+      "name": "side",
+      "type": "roq/kucoin_pro/protocol/json/Side"
+    },
+    {
+      "name": "size",
+      "type": "std/double"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "timeInForce",
+      "type": "roq/kucoin_pro/protocol/json/TimeInForce"
+    },
+    {
+      "name": "tags",
+      "type": "std/string_view"
+    },
+    {
+      "name": "orderTime",
+      "type": "std/nanoseconds"
+    },
+    {
+      "name": "stp",
+      "type": "roq/kucoin_pro/protocol/json/SelfTradePrevention"
+    },
+    {
+      "name": "cancelAfter",
+      "type": "std/nanoseconds"
+    },
+    {
+      "name": "postOnly",
+      "type": "std/bool"
+    },
+    {
+      "name": "reduceOnly",
+      "type": "std/bool"
+    },
+    {
+      "name": "triggerDirection",
+      "type": "std/string_view"
+    },
+    {
+      "name": "triggerPrice",
+      "type": "std/string_view"
+    },
+    {
+      "name": "triggerPriceType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tpTriggerPrice",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tpTriggerPriceType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "slTriggerPrice",
+      "type": "std/string_view"
+    },
+    {
+      "name": "slTriggerPriceType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "filledSize",
+      "type": "std/double"
+    },
+    {
+      "name": "avgPrice",
+      "type": "std/double"
+    },
+    {
+      "name": "fee",
+      "type": "std/double"
+    },
+    {
+      "name": "feeCurrency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tax",
+      "type": "std/double"
+    },
+    {
+      "name": "updatedTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "triggerOrderId",
+      "type": "std/string_view"
+    },
+    {
+      "name": "cancelReason",
+      "type": "std/string_view"
+    },
+    {
+      "name": "cancelSize",
+      "type": "std/double"
+    },
+    {
+      "name": "clientOid",
+      "type": "std/string_view"
+    },
+    {
+      "name": "sizeUnit",
+      "type": "std/string_view"
+    },
+    {
+      "name": "status",
+      "type": "std/int32"
+    }
+  ]
+}

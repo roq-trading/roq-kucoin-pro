@@ -4,14 +4,14 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_pro/json/instrument_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/instrument_ack.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::InstrumentAck;
+using value_type = protocol::json::InstrumentAck;
 
 // note! truncated
 TEST_CASE("simple", "[json_instrument_ack]") {

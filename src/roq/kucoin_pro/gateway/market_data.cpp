@@ -14,8 +14,8 @@
 
 #include "roq/utils/metrics/factory.hpp"
 
-#include "roq/kucoin_pro/json/map.hpp"
-#include "roq/kucoin_pro/json/utils.hpp"
+#include "roq/kucoin_pro/protocol/json/map.hpp"
+#include "roq/kucoin_pro/protocol/json/utils.hpp"
 
 #include "roq/kucoin_pro/tools/splitter.hpp"
 
@@ -293,7 +293,7 @@ void MarketData::parse(std::string_view const &message) {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -303,7 +303,7 @@ void MarketData::parse(std::string_view const &message) {
   });
 }
 
-void MarketData::operator()(Trace<json::Welcome> const &event) {
+void MarketData::operator()(Trace<protocol::json::Welcome> const &event) {
   profile_.welcome([&]() {
     auto &[trace_info, welcome] = event;
     log::info<1>("welcome={}"sv, welcome);
@@ -314,7 +314,7 @@ void MarketData::operator()(Trace<json::Welcome> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Error> const &event) {
+void MarketData::operator()(Trace<protocol::json::Error> const &event) {
   profile_.error([&]() {
     // XXX HANS DEBUG
     auto &[trace_info, error] = event;
@@ -323,14 +323,14 @@ void MarketData::operator()(Trace<json::Error> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Pong> const &event) {
+void MarketData::operator()(Trace<protocol::json::Pong> const &event) {
   profile_.pong([&]() {
     auto &[trace_info, pong] = event;
     log::info<4>("pong={}"sv, pong);
   });
 }
 
-void MarketData::operator()(Trace<json::Ack> const &event) {
+void MarketData::operator()(Trace<protocol::json::Ack> const &event) {
   profile_.ack([&]() {
     auto &[trace_info, ack] = event;
     log::info<2>("ack={}"sv, ack);
@@ -338,7 +338,7 @@ void MarketData::operator()(Trace<json::Ack> const &event) {
 }
 
 // note! only updated on trade
-void MarketData::operator()(Trace<json::Ticker> const &event) {
+void MarketData::operator()(Trace<protocol::json::Ticker> const &event) {
   profile_.ticker([&]() {
     auto &[trace_info, ticker] = event;
     log::info<4>("ticker={}"sv, ticker);
@@ -363,7 +363,7 @@ void MarketData::operator()(Trace<json::Ticker> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Trade> const &event) {
+void MarketData::operator()(Trace<protocol::json::Trade> const &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
     log::info<4>("trade={}"sv, trade);
@@ -390,7 +390,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::OBU> const &event) {
+void MarketData::operator()(Trace<protocol::json::OBU> const &event) {
   profile_.obu([&]() {
     auto &[trace_info, obu] = event;
     log::info<4>("obu={}"sv, obu);
@@ -493,7 +493,7 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
       }
     };
     switch (obu.depth) {
-      using enum json::Depth::type_t;
+      using enum protocol::json::Depth::type_t;
       case UNDEFINED_INTERNAL:
       case UNKNOWN_INTERNAL:
         log::fatal("Unexpected"sv);
@@ -507,15 +507,15 @@ void MarketData::operator()(Trace<json::OBU> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Balance> const &) {
+void MarketData::operator()(Trace<protocol::json::Balance> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(Trace<json::PositionAll> const &) {
+void MarketData::operator()(Trace<protocol::json::PositionAll> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(Trace<json::OrderAll> const &) {
+void MarketData::operator()(Trace<protocol::json::OrderAll> const &) {
   log::fatal("Unexpected"sv);
 }
 

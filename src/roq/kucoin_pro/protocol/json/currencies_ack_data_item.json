@@ -1,0 +1,35 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/CurrenciesAckDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "currency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "name",
+      "type": "std/string_view"
+    },
+    {
+      "name": "fullName",
+      "type": "std/string_view"
+    },
+    {
+      "name": "precision",
+      "type": "std/int32"
+    },
+    {
+      "name": "isMarginEnabled",
+      "type": "std/bool"
+    },
+    {
+      "name": "isDebitEnabled",
+      "type": "std/bool"
+    },
+    {
+      "name": "items",
+      "type": "roq/kucoin_pro/protocol/json/CurrenciesAckDataItemItemsItem",
+      "array": "std/span"
+    }
+  ]
+}

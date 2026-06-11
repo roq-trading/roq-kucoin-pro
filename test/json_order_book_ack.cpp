@@ -4,14 +4,14 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_pro/json/order_book_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/order_book_ack.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::OrderBookAck;
+using value_type = protocol::json::OrderBookAck;
 
 // note! truncated
 TEST_CASE("simple", "[json_order_book_ack]") {
@@ -39,7 +39,7 @@ TEST_CASE("simple", "[json_order_book_ack]") {
   auto helper = [](value_type const &obj) {
     CHECK(obj.code == 200000);
     auto &data = obj.data;
-    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.trade_type == protocol::json::TradeType::FUTURES);
     CHECK(data.sequence == 1696964929551);
     CHECK(data.symbol == "XBTUSDCM"sv);
     auto &bids = data.bids;

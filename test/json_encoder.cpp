@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/kucoin_pro/json/encoder.hpp"
+#include "roq/kucoin_pro/protocol/json/encoder.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
@@ -66,7 +66,7 @@ TEST_CASE("create_market", "[json_encoder]") {
   server::oms::Order order;
   auto ref_data = create_ref_data();
   auto request_id = "1234"sv;
-  auto message = json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
+  auto message = protocol::json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
   CHECK(
       message == R"({)"
                  R"("clientOid":"1234",)"
@@ -106,7 +106,7 @@ TEST_CASE("create_limit", "[json_add_order]") {
   server::oms::Order order;
   auto ref_data = create_ref_data();
   auto request_id = "1234"sv;
-  auto message = json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
+  auto message = protocol::json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
   CHECK(
       message == R"({)"
                  R"("clientOid":"1234",)"
@@ -148,7 +148,7 @@ TEST_CASE("create_ioc", "[json_add_order]") {
   server::oms::Order order;
   auto ref_data = create_ref_data();
   auto request_id = "1234"sv;
-  auto message = json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
+  auto message = protocol::json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
   CHECK(
       message == R"({)"
                  R"("clientOid":"1234",)"
@@ -191,7 +191,7 @@ TEST_CASE("create_post_only", "[json_add_order]") {
   server::oms::Order order;
   auto ref_data = create_ref_data();
   auto request_id = "1234"sv;
-  auto message = json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
+  auto message = protocol::json::Encoder::add_order(buffer, create_order, order, ref_data, request_id);
   CHECK(
       message == R"({)"
                  R"("clientOid":"1234",)"

@@ -1,0 +1,21 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/TimeInForce",
+  "type": "enum",
+  "values": [
+    {
+      "name": "GTC"
+    },
+    {
+      "name": "IOC"
+    },
+    {
+      "name": "FOK"
+    },
+    {
+      "name": "GTT"
+    },
+    {
+      "name": "RTI"
+    }
+  ]
+}

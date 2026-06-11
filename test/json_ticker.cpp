@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::Ticker;
+using value_type = protocol::json::Ticker;
 
 TEST_CASE("simple", "[json_ticker]") {
   auto message = R"({)"
@@ -29,7 +29,7 @@ TEST_CASE("simple", "[json_ticker]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::TICKER_FUTURES);
+    CHECK(obj.channel == protocol::json::Channel::TICKER_FUTURES);
     CHECK(obj.push_time == 1771594732074799474ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

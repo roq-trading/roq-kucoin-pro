@@ -1,0 +1,9 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/TradeType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "FUTURES"
+    }
+  ]
+}

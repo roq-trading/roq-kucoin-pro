@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::Trade;
+using value_type = protocol::json::Trade;
 
 TEST_CASE("simple", "[json_trade]") {
   auto message = R"({)"
@@ -27,7 +27,7 @@ TEST_CASE("simple", "[json_trade]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::TRADE_FUTURES);
+    CHECK(obj.channel == protocol::json::Channel::TRADE_FUTURES);
     CHECK(obj.push_time == 1771596007956145319ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

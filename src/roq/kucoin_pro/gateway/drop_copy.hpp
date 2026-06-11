@@ -24,13 +24,13 @@
 #include "roq/kucoin_pro/gateway/request.hpp"
 #include "roq/kucoin_pro/gateway/shared.hpp"
 
-#include "roq/kucoin_pro/json/parser.hpp"
+#include "roq/kucoin_pro/protocol/json/parser.hpp"
 
 namespace roq {
 namespace kucoin_pro {
 namespace gateway {
 
-struct DropCopy final : public web::socket::Client::Handler, public json::Parser::Handler {
+struct DropCopy final : public web::socket::Client::Handler, public protocol::json::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
@@ -84,18 +84,18 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
 
   void parse(std::string_view const &message);
 
-  void operator()(Trace<json::Welcome> const &) override;
-  void operator()(Trace<json::Error> const &) override;
-  void operator()(Trace<json::Pong> const &) override;
-  void operator()(Trace<json::Ack> const &) override;
+  void operator()(Trace<protocol::json::Welcome> const &) override;
+  void operator()(Trace<protocol::json::Error> const &) override;
+  void operator()(Trace<protocol::json::Pong> const &) override;
+  void operator()(Trace<protocol::json::Ack> const &) override;
 
-  void operator()(Trace<json::Ticker> const &) override;
-  void operator()(Trace<json::Trade> const &) override;
-  void operator()(Trace<json::OBU> const &) override;
+  void operator()(Trace<protocol::json::Ticker> const &) override;
+  void operator()(Trace<protocol::json::Trade> const &) override;
+  void operator()(Trace<protocol::json::OBU> const &) override;
 
-  void operator()(Trace<json::Balance> const &) override;
-  void operator()(Trace<json::PositionAll> const &) override;
-  void operator()(Trace<json::OrderAll> const &) override;
+  void operator()(Trace<protocol::json::Balance> const &) override;
+  void operator()(Trace<protocol::json::PositionAll> const &) override;
+  void operator()(Trace<protocol::json::OrderAll> const &) override;
 
   void check_response_private_token();
 

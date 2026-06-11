@@ -1,0 +1,38 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/OBUData",
+  "type": "dictionary",
+  "values": [
+    {
+      "raw": "a",
+      "name": "asks",
+      "type": "roq/kucoin_pro/protocol/json/OBUDataItem",
+      "array": "std/span"
+    },
+    {
+      "raw": "b",
+      "name": "bids",
+      "type": "roq/kucoin_pro/protocol/json/OBUDataItem",
+      "array": "std/span"
+    },
+    {
+      "raw": "O",
+      "name": "start_sequence",
+      "type": "std/uint64"
+    },
+    {
+      "raw": "C",
+      "name": "end_sequence",
+      "type": "std/uint64"
+    },
+    {
+      "raw": "s",
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "raw": "M",
+      "name": "timestamp",
+      "type": "std/nanoseconds"
+    }
+  ]
+}

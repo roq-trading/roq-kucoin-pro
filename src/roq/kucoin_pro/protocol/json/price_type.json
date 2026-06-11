@@ -1,0 +1,15 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/PriceType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "TP"
+    },
+    {
+      "name": "IP"
+    },
+    {
+      "name": "MP"
+    }
+  ]
+}

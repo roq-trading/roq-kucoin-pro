@@ -1,0 +1,91 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/PositionAllData",
+  "type": "dictionary",
+  "values": [
+    {
+      "raw": "pi",
+      "name": "position_id",
+      "type": "std/int64"
+    },
+    {
+      "raw": "s",
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "raw": "mM",
+      "name": "margin_mode",
+      "type": "roq/kucoin_pro/protocol/json/MarginMode"
+    },
+    {
+      "raw": "q",
+      "name": "position_size",
+      "type": "std/double"
+    },
+    {
+      "raw": "eP",
+      "name": "entry_price",
+      "type": "std/double"
+    },
+    {
+      "raw": "pV",
+      "name": "position_value",
+      "type": "std/double"
+    },
+    {
+      "raw": "mP",
+      "name": "mark_price",
+      "type": "std/double"
+    },
+    {
+      "raw": "lP",
+      "name": "liquidation_price",
+      "type": "std/double"
+    },
+    {
+      "raw": "bP",
+      "name": "bankrupt_price",
+      "type": "std/double"
+    },
+    {
+      "raw": "l",
+      "name": "leverage",
+      "type": "std/double"
+    },
+    {
+      "raw": "uPL",
+      "name": "unrealized_pnl",
+      "type": "std/double"
+    },
+    {
+      "raw": "rPL",
+      "name": "realized_pnl",
+      "type": "std/double"
+    },
+    {
+      "raw": "iM",
+      "name": "initial_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "mmr",
+      "name": "maintenance_margin_rate",
+      "type": "std/double"
+    },
+    {
+      "raw": "mtM",
+      "name": "maintenance_margin",
+      "type": "std/double"
+    },
+    {
+      "raw": "U",
+      "name": "update_time",
+      "type": "std/nanoseconds"
+    },
+    {
+      "raw": "O",
+      "name": "create_time",
+      "type": "std/nanoseconds"
+    }
+  ]
+}

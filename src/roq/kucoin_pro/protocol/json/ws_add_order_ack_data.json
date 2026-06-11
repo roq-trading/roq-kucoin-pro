@@ -1,0 +1,22 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/WSAddOrderAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "orderId",
+      "type": "std/string_view"
+    },
+    {
+      "name": "tradeType",
+      "type": "roq/kucoin_pro/protocol/json/TradeType"
+    },
+    {
+      "name": "ts",
+      "type": "std/nanoseconds"
+    },
+    {
+      "name": "clientOid",
+      "type": "std/string_view"
+    }
+  ]
+}

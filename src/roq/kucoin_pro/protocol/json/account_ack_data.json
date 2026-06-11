@@ -1,0 +1,19 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/AccountAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "accountType",
+      "type": "roq/kucoin_pro/protocol/json/AccountType"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "accounts",
+      "type": "roq/kucoin_pro/protocol/json/AccountAckDataAccountsItem",
+      "array": "std/span"
+    }
+  ]
+}

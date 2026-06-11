@@ -1,0 +1,21 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/FillType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "NORMAL"
+    },
+    {
+      "name": "LIQUID"
+    },
+    {
+      "name": "ADL"
+    },
+    {
+      "name": "SETTLEMENT"
+    },
+    {
+      "name": "RECONCILIATION"
+    }
+  ]
+}

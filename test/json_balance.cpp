@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::Balance;
+using value_type = protocol::json::Balance;
 
 TEST_CASE("simple", "[json_balance]") {
   auto message = R"({)"
@@ -26,7 +26,7 @@ TEST_CASE("simple", "[json_balance]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::BALANCE_UNIFIED);
+    CHECK(obj.channel == protocol::json::Channel::BALANCE_UNIFIED);
     CHECK(obj.push_time == 1771732989773425836ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

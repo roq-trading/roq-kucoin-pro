@@ -1,9 +1,0 @@
-{
-  "name": "roq/kucoin_pro/json/AccountType",
-  "type": "enum",
-  "values": [
-    {
-      "name": "UNIFIED"
-    }
-  ]
-}

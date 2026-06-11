@@ -1,0 +1,22 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/Side",
+  "type": "enum",
+  "values": [
+    {
+      "raw": "buy",
+      "name": "BUY_LC"
+    },
+    {
+      "raw": "sell",
+      "name": "SELL_LC"
+    },
+    {
+      "raw": "BUY",
+      "name": "BUY"
+    },
+    {
+      "raw": "SELL",
+      "name": "SELL"
+    }
+  ]
+}

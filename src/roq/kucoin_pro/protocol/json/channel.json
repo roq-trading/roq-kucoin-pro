@@ -1,0 +1,30 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/Channel",
+  "type": "enum",
+  "values": [
+    {
+      "raw": "ticker.FUTURES",
+      "name": "ticker_futures"
+    },
+    {
+      "raw": "trade.FUTURES",
+      "name": "trade_futures"
+    },
+    {
+      "raw": "obu.FUTURES",
+      "name": "obu_futures"
+    },
+    {
+      "raw": "balance.UNIFIED",
+      "name": "balance_unified"
+    },
+    {
+      "raw": "positionAll.UNIFIED",
+      "name": "position_all_unified"
+    },
+    {
+      "raw": "orderAll.UNIFIED",
+      "name": "order_all_unified"
+    }
+  ]
+}

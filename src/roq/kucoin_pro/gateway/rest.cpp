@@ -12,8 +12,8 @@
 
 #include "roq/utils/metrics/factory.hpp"
 
-#include "roq/kucoin_pro/json/map.hpp"
-#include "roq/kucoin_pro/json/utils.hpp"
+#include "roq/kucoin_pro/protocol/json/map.hpp"
+#include "roq/kucoin_pro/protocol/json/utils.hpp"
 
 #include "roq/kucoin_pro/tools/splitter.hpp"
 
@@ -230,13 +230,13 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::CurrenciesAck currencies_ack{body, decode_buffer_};
+        protocol::json::CurrenciesAck currencies_ack{body, decode_buffer_};
         if (currencies_ack.code == SYSTEM_CODE_SUCCESS) {
           Trace event_2{event, currencies_ack};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(currencies_ack.code), currencies_ack.msg);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(currencies_ack.code), currencies_ack.msg);
         }
       }
     };
@@ -244,7 +244,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
   });
 }
 
-void Rest::operator()(Trace<json::CurrenciesAck> const &event) {
+void Rest::operator()(Trace<protocol::json::CurrenciesAck> const &event) {
   auto &[trace_info, currencies_ack] = event;
   log::info<4>("currencies_ack={}"sv, currencies_ack);
   /*
@@ -288,13 +288,13 @@ void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t 
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::InstrumentAck instrument_ack{body, decode_buffer_};
+        protocol::json::InstrumentAck instrument_ack{body, decode_buffer_};
         if (instrument_ack.code == SYSTEM_CODE_SUCCESS) {
           Trace event_2{event, instrument_ack};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(instrument_ack.code), instrument_ack.msg);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(instrument_ack.code), instrument_ack.msg);
         }
       }
     };
@@ -302,7 +302,7 @@ void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t 
   });
 }
 
-void Rest::operator()(Trace<json::InstrumentAck> const &event) {
+void Rest::operator()(Trace<protocol::json::InstrumentAck> const &event) {
   auto &[trace_info, instrument_ack] = event;
   log::info<4>("instrument_ack={}"sv, instrument_ack);
   std::vector<Symbol> symbols;

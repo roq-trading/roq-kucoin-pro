@@ -1,0 +1,33 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/OrderBookAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "tradeType",
+      "type": "roq/kucoin_pro/protocol/json/TradeType"
+    },
+    {
+      "name": "sequence",
+      "type": "std/uint64"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "bids",
+      "type": "roq/kucoin_pro/protocol/json/OrderBookAckDataBidsAsksItem",
+      "array": "std/span"
+    },
+    {
+      "name": "asks",
+      "type": "roq/kucoin_pro/protocol/json/OrderBookAckDataBidsAsksItem",
+      "array": "std/span"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds",
+      "comment": "was ns (v1) but never used"
+    }
+  ]
+}

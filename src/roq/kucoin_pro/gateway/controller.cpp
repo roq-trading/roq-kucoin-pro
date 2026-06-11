@@ -6,7 +6,7 @@
 
 #include "roq/server/oms/exceptions.hpp"
 
-#include "roq/kucoin_pro/json/utils.hpp"
+#include "roq/kucoin_pro/protocol/json/utils.hpp"
 
 using namespace std::literals;
 

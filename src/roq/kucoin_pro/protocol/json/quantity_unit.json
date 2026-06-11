@@ -1,0 +1,15 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/QuantityUnit",
+  "type": "enum",
+  "values": [
+    {
+      "name": "BASECCY"
+    },
+    {
+      "name": "QUOTECCY"
+    },
+    {
+      "name": "UNIT"
+    }
+  ]
+}

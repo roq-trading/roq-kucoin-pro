@@ -1,0 +1,12 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/LiquidityRole",
+  "type": "enum",
+  "values": [
+    {
+      "name": "TAKER"
+    },
+    {
+      "name": "MAKER"
+    }
+  ]
+}

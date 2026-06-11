@@ -1,0 +1,18 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/ExecutionAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "tradeType",
+      "type": "roq/kucoin_pro/protocol/json/TradeType"
+    },
+    {
+      "name": "lastId"
+    },
+    {
+      "name": "items",
+      "type": "roq/kucoin_pro/protocol/json/ExecutionAckDataItemsItem",
+      "array": "std/span"
+    }
+  ]
+}

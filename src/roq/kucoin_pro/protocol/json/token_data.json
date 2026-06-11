@@ -1,0 +1,10 @@
+{
+  "name": "roq/kucoin_pro/protocol/json/TokenData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "token",
+      "type": "std/string_view"
+    }
+  ]
+}

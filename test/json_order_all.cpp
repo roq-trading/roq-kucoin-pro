@@ -9,7 +9,7 @@ using namespace roq::kucoin_pro;
 
 using namespace std::literals;
 
-using value_type = json::OrderAll;
+using value_type = protocol::json::OrderAll;
 
 TEST_CASE("create", "[json_order_all]") {
   auto message = R"({)"
@@ -57,7 +57,7 @@ TEST_CASE("create", "[json_order_all]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::ORDER_ALL_UNIFIED);
+    CHECK(obj.channel == protocol::json::Channel::ORDER_ALL_UNIFIED);
     CHECK(obj.push_time == 1771742294040092777ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -109,7 +109,7 @@ TEST_CASE("cancel", "[json_order_all]") {
                  R"(})"
                  R"(})"sv;
   auto helper = [](value_type const &obj) {
-    CHECK(obj.channel == json::Channel::ORDER_ALL_UNIFIED);
+    CHECK(obj.channel == protocol::json::Channel::ORDER_ALL_UNIFIED);
     CHECK(obj.push_time == 1771757876485897853ns);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

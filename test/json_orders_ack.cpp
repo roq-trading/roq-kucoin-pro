@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/kucoin_pro/json/orders_ack.hpp"
+#include "roq/kucoin_pro/protocol/json/orders_ack.hpp"
 
 using namespace roq;
 using namespace roq::kucoin_pro;
@@ -13,7 +13,7 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using value_type = json::OrdersAck;
+using value_type = protocol::json::OrdersAck;
 
 TEST_CASE("empty", "[json_orders_ack]") {
   auto const message = R"({)"
@@ -35,7 +35,7 @@ TEST_CASE("empty", "[json_orders_ack]") {
     CHECK(data.total_num == 0);
     CHECK(data.total_page == 0);
     REQUIRE(std::empty(data.items));
-    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.trade_type == protocol::json::TradeType::FUTURES);
   };
   core::json::BufferStack buffers{8192, 2};
   value_type obj{message, buffers};
@@ -99,7 +99,7 @@ TEST_CASE("simple", "[json_orders_ack]") {
     auto &i0 = data.items[0];
     CHECK(i0.order_id == "414899660931538944"sv);
     // ...
-    CHECK(data.trade_type == json::TradeType::FUTURES);
+    CHECK(data.trade_type == protocol::json::TradeType::FUTURES);
   };
   core::json::BufferStack buffers{8192, 2};
   value_type obj{message, buffers};
