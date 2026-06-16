@@ -308,6 +308,7 @@ void OrderEntryWS::operator()(Trace<protocol::json::WSError> const &event) {
           .version = {},
           .request_id = error.id,
           .external_order_id = {},
+          .client_order_id = {},
           .quantity = NaN,
           .price = NaN,
       };
@@ -351,6 +352,7 @@ void OrderEntryWS::operator()(Trace<protocol::json::WSAddOrderAck> const &event)
         .version = {},
         .request_id = add_order_ack.id,
         .external_order_id = add_order_ack.data.order_id,
+        .client_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
@@ -372,6 +374,7 @@ void OrderEntryWS::operator()(Trace<protocol::json::WSCancelOrderAck> const &eve
         .version = {},
         .request_id = cancel_order_ack.id,
         .external_order_id = {},
+        .client_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
