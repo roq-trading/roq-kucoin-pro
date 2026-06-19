@@ -30,10 +30,7 @@ namespace kucoin_pro {
 namespace gateway {
 
 struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public protocol::json::WSParser::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-  };
+  struct Handler {};
 
   OrderEntryWS(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 

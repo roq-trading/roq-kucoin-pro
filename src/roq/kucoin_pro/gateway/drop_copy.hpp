@@ -31,10 +31,7 @@ namespace kucoin_pro {
 namespace gateway {
 
 struct DropCopy final : public web::socket::Client::Handler, public protocol::json::Parser::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-  };
+  struct Handler {};
 
   DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &, std::string_view const &query);
 
