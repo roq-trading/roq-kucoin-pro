@@ -7,21 +7,18 @@
       "name": "uri",
       "type": "roq/io/web/URI",
       "validator": "roq/core/flags/URI",
-      "default": "wss://wsapi.kucoin.com",
       "description": "Exchange end-point"
     },
     {
       "name": "public_uri",
       "type": "roq/io/web/URI",
       "validator": "roq/core/flags/URI",
-      "default": "wss://x-push-futures.kucoin.com",
       "description": "Exchange end-point"
     },
     {
       "name": "private_uri",
       "type": "roq/io/web/URI",
       "validator": "roq/core/flags/URI",
-      "default": "wss://x-push-futures.kucoin.com",
       "description": "Exchange end-point"
     },
     {
