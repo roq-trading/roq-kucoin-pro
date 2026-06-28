@@ -110,6 +110,41 @@
     {
       "name": "mmrLevConstant",
       "type": "std/double"
+    },
+    {
+      "name": "orderPriceRange",
+      "type": "std/double"
+    },
+    {
+      "name": "buyLimit",
+      "type": "std/double"
+    },
+    {
+      "name": "sellLimit",
+      "type": "std/double"
+    },
+    {
+      "name": "displaySymbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "indexPriceTickSize",
+      "type": "std/double"
+    },
+    {
+      "name": "marketMaxOrderQty",
+      "type": "std/double"
+    },
+    {
+      "name": "marketType",
+      "type": "std/string_view"
+    },
+    {
+      "name": "marketStage",
+      "type": "std/string_view"
+    },
+    {
+      "name": "preMarketToPerpDate"
     }
   ]
 }

@@ -29,6 +29,10 @@
     {
       "name": "potentialBorrow",
       "type": "std/double"
+    },
+    {
+      "name": "collateralStatus",
+      "type": "std/int32"
     }
   ]
 }
