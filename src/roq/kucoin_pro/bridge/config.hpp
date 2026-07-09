@@ -6,10 +6,10 @@
 
 namespace roq {
 namespace kucoin_pro {
-namespace proto_bridge {
+namespace bridge {
 
 using Config = gateway::Config;
 
-}  // namespace proto_bridge
+}  // namespace bridge
 }  // namespace kucoin_pro
 }  // namespace roq
