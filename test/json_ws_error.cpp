@@ -10,6 +10,22 @@ using namespace roq::kucoin_pro;
 using namespace std::literals;
 
 using value_type = protocol::json::WSError;
+
+TEST_CASE("auth", "[json_ws_parser]") {
+  auto message = R"({)"
+                 R"("code":"400004",)"
+                 R"("msg":"Invalid KC-API-PASSPHRASE",)"
+                 R"("inTime":1787653645787,)"
+                 R"("outTime":1787653648790)"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.code == 400004);
+    CHECK(obj.msg == "Invalid KC-API-PASSPHRASE"sv);
+    //
+    CHECK(obj.op == protocol::json::WSOp{});
+  };
+  WSParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
 /*
 TEST_CASE("create_order", "[json_ws_parser]") {
   auto message = R"({)"

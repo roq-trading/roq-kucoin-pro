@@ -332,7 +332,7 @@ void OrderEntryREST::get_private_token_ack(Trace<web::rest::Response> const &eve
           Trace event_2{event, token};
           (*this)(event_2);
         } else {
-          log::fatal("Unexpected: token={}"sv, token);
+          log::error("Unexpected: token={}"sv, token);
         }
         if (download_.downloading()) {
           download_.check(STATE);
