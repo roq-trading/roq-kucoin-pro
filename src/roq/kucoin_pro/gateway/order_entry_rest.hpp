@@ -164,7 +164,7 @@ struct OrderEntryREST final : public OrderEntry, public web::rest::Client::Handl
 
   void check_request_queue(std::chrono::nanoseconds now);
 
-  void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
+  void process_response(Trace<web::rest::Response> const &, auto error_handler, auto success_handler);
 
  private:
   Handler &handler_;

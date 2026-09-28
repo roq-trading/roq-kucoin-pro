@@ -63,7 +63,7 @@ auto create_connection(auto &handler, auto &settings, auto &context, auto &share
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::socket::Client::create(handler, context, config, shared.rate_limit, []() -> std::string { return {}; });
+  return web::socket::Client::create(handler, context, config, shared.throttle, []() -> std::string { return {}; });
 }
 
 struct create_metrics final : public utils::metrics::Factory {
@@ -158,7 +158,7 @@ void DropCopy::operator()(PrivateToken const &private_token) {
   }
 }
 
-void DropCopy::operator()(web::socket::Client::Connected const &) {
+void DropCopy::operator()(Trace<web::socket::Connected> const &) {
   assert(logon_timeout_.count() == 0);
   auto now = clock::get_system();
   logon_timeout_ = now + shared_.settings.ws.request_timeout;
@@ -168,7 +168,7 @@ void DropCopy::operator()(web::socket::Client::Connected const &) {
   }
 }
 
-void DropCopy::operator()(web::socket::Client::Disconnected const &) {
+void DropCopy::operator()(Trace<web::socket::Disconnected> const &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
@@ -178,15 +178,15 @@ void DropCopy::operator()(web::socket::Client::Disconnected const &) {
   next_ping_ = {};
 }
 
-void DropCopy::operator()(web::socket::Client::Ready const &) {
+void DropCopy::operator()(Trace<web::socket::Ready> const &) {
   // note! wait for welcome
 }
 
-void DropCopy::operator()(web::socket::Client::Close const &) {
+void DropCopy::operator()(Trace<web::socket::Close> const &) {
 }
 
-void DropCopy::operator()(web::socket::Client::Latency const &latency) {
-  TraceInfo trace_info;
+void DropCopy::operator()(Trace<web::socket::Latency> const &event) {
+  auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = account_.name,
@@ -196,11 +196,12 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(web::socket::Client::Text const &) {
+void DropCopy::operator()(Trace<web::socket::Text> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(web::socket::Client::Binary const &binary) {
+void DropCopy::operator()(Trace<web::socket::Binary> const &event) {
+  auto &[trace_info, binary] = event;
   std::string_view payload{reinterpret_cast<char const *>(std::data(binary.payload)), std::size(binary.payload)};
   parse(payload);
 }
