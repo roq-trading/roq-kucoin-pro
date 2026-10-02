@@ -367,6 +367,8 @@ void MarketData::operator()(Trace<protocol::json::Trade> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto &data = trade.data;
     auto trade_2 = Trade{
+        .trade_conditions = {},
+        .trade_type = {},
         .side = map(data.side),
         .price = data.price,
         .quantity = data.quantity,
