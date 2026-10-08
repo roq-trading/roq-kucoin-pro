@@ -96,9 +96,9 @@ struct Controller final : public server::Handler,
   template <typename... Args>
   static void dispatch_helper(auto &self, Args &&...);
 
-  OrderEntry &get_order_entry_rest(std::string_view const &account);
-  OrderEntry &get_order_entry_ws(std::string_view const &account);
-  OrderEntry &get_order_entry(std::string_view const &account);
+  server::OrderActionStream &get_order_entry_rest(std::string_view const &account);
+  server::OrderActionStream &get_order_entry_ws(std::string_view const &account);
+  server::OrderActionStream &get_order_entry(std::string_view const &account);
 
  private:
   server::Dispatcher &dispatcher_;

@@ -95,8 +95,18 @@ DropCopy::DropCopy(
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
-      account_{account}, shared_{shared}, request_{request}, download_{{}, [this](auto state) { return download(state); }} {
+      account_{account}, shared_{shared}, request_{request}, download_{{}, [this](auto &event) { return download(event); }} {
 }
+
+void DropCopy::operator()(PrivateToken const &private_token) {
+  if (!std::empty(private_token.query) && query_ != private_token.query) {
+    query_ = private_token.query;
+    log::warn(R"(DEBUG private_token="{}")"sv, query_);
+    (*connection_).resume();
+  }
+}
+
+// server::Stream
 
 bool DropCopy::ready() const {
   return (*connection_).ready();
@@ -150,15 +160,32 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(latency_.heartbeat, metrics::Type::LATENCY);
 }
 
-void DropCopy::operator()(PrivateToken const &private_token) {
-  if (!std::empty(private_token.query) && query_ != private_token.query) {
-    query_ = private_token.query;
-    log::warn(R"(DEBUG private_token="{}")"sv, query_);
-    (*connection_).resume();
-  }
+void DropCopy::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
+  connection_status_ = connection_status;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::WS,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
-void DropCopy::operator()(Trace<web::socket::Connected> const &) {
+// web::socket::Client::Handler
+
+void DropCopy::operator()(Trace<web::socket::Connected> const &event) {
+  auto &[trace_info, connected] = event;
   assert(logon_timeout_.count() == 0);
   auto now = clock::get_system();
   logon_timeout_ = now + shared_.settings.ws.request_timeout;
@@ -168,10 +195,11 @@ void DropCopy::operator()(Trace<web::socket::Connected> const &) {
   }
 }
 
-void DropCopy::operator()(Trace<web::socket::Disconnected> const &) {
+void DropCopy::operator()(Trace<web::socket::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
   ready_ = false;
-  (*this)(ConnectionStatus::DISCONNECTED);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
   download_.reset();
   welcome_ = false;
   logon_timeout_ = {};
@@ -182,7 +210,9 @@ void DropCopy::operator()(Trace<web::socket::Ready> const &) {
   // note! wait for welcome
 }
 
-void DropCopy::operator()(Trace<web::socket::Close> const &) {
+void DropCopy::operator()(Trace<web::socket::Close> const &event) {
+  auto &[trace_info, close] = event;
+  log::warn("close={}"sv, close);
 }
 
 void DropCopy::operator()(Trace<web::socket::Latency> const &event) {
@@ -206,46 +236,116 @@ void DropCopy::operator()(Trace<web::socket::Binary> const &event) {
   parse(payload);
 }
 
-void DropCopy::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
-  connection_status_ = connection_status;
-  TraceInfo trace_info;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.name,
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::WS,
-      .encoding = {Encoding::JSON},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_).get_interface(),
-      .authority = (*connection_).get_current_authority(),
-      .path = (*connection_).get_current_path(),
-      .proxy = (*connection_).get_proxy(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
-}
+// core::Download
 
-uint32_t DropCopy::download(State state) {
+int32_t DropCopy::download(Trace<State> const &event) {
+  auto &[trace_info, state] = event;
   switch (state) {
     using enum State;
     case UNDEFINED:
       assert(false);
       break;
     case SUBSCRIBE:
-      (*this)(ConnectionStatus::DOWNLOADING, "subscribe"sv);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe"sv);
       subscribe();
       return 0;
     case DONE:
-      (*this)(ConnectionStatus::READY);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
       assert(!ready_);
       ready_ = true;
       return 0;
   }
   assert(false);
   return 0;
+}
+
+// protocol::json::Parser::Handler
+
+void DropCopy::operator()(Trace<protocol::json::Welcome> const &event) {
+  profile_.welcome([&]() {
+    auto &[trace_info, welcome] = event;
+    log::info<1>("welcome={}"sv, welcome);
+    welcome_ = true;
+    download_.begin(trace_info);
+  });
+}
+
+void DropCopy::operator()(Trace<protocol::json::Error> const &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::error("error={}"sv, error);
+    // XXX FIXME TODO this was carried over from roq-kucoin-futures -- check data
+    if (error.code == 401 && error.data == "token is expired"sv) {
+      request_private_token();
+    }
+  });
+}
+
+void DropCopy::operator()(Trace<protocol::json::Pong> const &event) {
+  profile_.pong([&]() {
+    auto &[trace_info, pong] = event;
+    log::info<4>("pong={}"sv, pong);
+  });
+}
+
+void DropCopy::operator()(Trace<protocol::json::Ack> const &event) {
+  profile_.ack([&]() {
+    auto &[trace_info, ack] = event;
+    log::info<2>("ack={}"sv, ack);
+  });
+}
+
+void DropCopy::operator()(Trace<protocol::json::Ticker> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(Trace<protocol::json::Trade> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(Trace<protocol::json::OBU> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(Trace<protocol::json::Balance> const &event) {
+  profile_.balance([&]() {
+    auto &[message_info, balance] = event;
+    log::warn("DEBUG balance={}"sv, balance);
+  });
+}
+
+void DropCopy::operator()(Trace<protocol::json::PositionAll> const &event) {
+  profile_.position_all([&]() {
+    auto &[message_info, position_all] = event;
+    log::warn("DEBUG position_all={}"sv, position_all);
+  });
+}
+
+void DropCopy::operator()(Trace<protocol::json::OrderAll> const &event) {
+  profile_.order_all([&]() {
+    auto &[message_info, order_all] = event;
+    log::warn("DEBUG order_all={}"sv, order_all);
+  });
+}
+
+// helpers
+
+void DropCopy::check_response_private_token() {
+  if (download_private_token_ && request_.request_private_token < request_.respond_private_token) {
+    download_private_token_ = false;
+    log::warn("GOT PRIVATE TOKEN"sv);
+  }
+}
+
+void DropCopy::request_private_token() {
+  if (std::empty(query_)) {
+    return;
+  }
+  log::warn("REQUEST PRIVATE TOKEN"sv);
+  query_.clear();
+  (*connection_).suspend_for(60s);
+  request_.request_private_token = clock::get_system();
+  download_private_token_ = true;
 }
 
 void DropCopy::subscribe() {
@@ -308,91 +408,6 @@ void DropCopy::parse(std::string_view const &message) {
       utils::exceptions::Unhandled::terminate();
     }
   });
-}
-
-void DropCopy::operator()(Trace<protocol::json::Welcome> const &event) {
-  profile_.welcome([&]() {
-    auto &[trace_info, welcome] = event;
-    log::info<1>("welcome={}"sv, welcome);
-    welcome_ = true;
-    download_.begin();
-  });
-}
-
-void DropCopy::operator()(Trace<protocol::json::Error> const &event) {
-  profile_.error([&]() {
-    auto &[trace_info, error] = event;
-    log::error("error={}"sv, error);
-    // XXX FIXME TODO this was carried over from roq-kucoin-futures -- check data
-    if (error.code == 401 && error.data == "token is expired"sv) {
-      request_private_token();
-    }
-  });
-}
-
-void DropCopy::operator()(Trace<protocol::json::Pong> const &event) {
-  profile_.pong([&]() {
-    auto &[trace_info, pong] = event;
-    log::info<4>("pong={}"sv, pong);
-  });
-}
-
-void DropCopy::operator()(Trace<protocol::json::Ack> const &event) {
-  profile_.ack([&]() {
-    auto &[trace_info, ack] = event;
-    log::info<2>("ack={}"sv, ack);
-  });
-}
-
-void DropCopy::operator()(Trace<protocol::json::Ticker> const &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(Trace<protocol::json::Trade> const &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(Trace<protocol::json::OBU> const &) {
-  log::fatal("Unexpected"sv);
-}
-
-void DropCopy::operator()(Trace<protocol::json::Balance> const &event) {
-  profile_.balance([&]() {
-    auto &[message_info, balance] = event;
-    log::warn("DEBUG balance={}"sv, balance);
-  });
-}
-
-void DropCopy::operator()(Trace<protocol::json::PositionAll> const &event) {
-  profile_.position_all([&]() {
-    auto &[message_info, position_all] = event;
-    log::warn("DEBUG position_all={}"sv, position_all);
-  });
-}
-
-void DropCopy::operator()(Trace<protocol::json::OrderAll> const &event) {
-  profile_.order_all([&]() {
-    auto &[message_info, order_all] = event;
-    log::warn("DEBUG order_all={}"sv, order_all);
-  });
-}
-
-void DropCopy::check_response_private_token() {
-  if (download_private_token_ && request_.request_private_token < request_.respond_private_token) {
-    download_private_token_ = false;
-    log::warn("GOT PRIVATE TOKEN"sv);
-  }
-}
-
-void DropCopy::request_private_token() {
-  if (std::empty(query_)) {
-    return;
-  }
-  log::warn("REQUEST PRIVATE TOKEN"sv);
-  query_.clear();
-  (*connection_).suspend_for(60s);
-  request_.request_private_token = clock::get_system();
-  download_private_token_ = true;
 }
 
 }  // namespace gateway

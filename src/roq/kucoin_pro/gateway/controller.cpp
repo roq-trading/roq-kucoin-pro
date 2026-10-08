@@ -258,7 +258,7 @@ void Controller::dispatch_helper(auto &self, Args &&...args) {
   }
 }
 
-OrderEntry &Controller::get_order_entry_rest(std::string_view const &account) {
+server::OrderActionStream &Controller::get_order_entry_rest(std::string_view const &account) {
   auto iter = order_entry_rest_.find(account);
   if (iter != std::end(order_entry_rest_)) {
     return *(*iter).second;
@@ -266,7 +266,7 @@ OrderEntry &Controller::get_order_entry_rest(std::string_view const &account) {
   throw RuntimeError{R"(Unknown account="{}")"sv, account};
 }
 
-OrderEntry &Controller::get_order_entry_ws(std::string_view const &account) {
+server::OrderActionStream &Controller::get_order_entry_ws(std::string_view const &account) {
   auto iter = order_entry_ws_.find(account);
   if (iter != std::end(order_entry_ws_)) {
     return *(*iter).second;
@@ -274,7 +274,7 @@ OrderEntry &Controller::get_order_entry_ws(std::string_view const &account) {
   throw RuntimeError{R"(Unknown account="{}")"sv, account};
 }
 
-OrderEntry &Controller::get_order_entry(std::string_view const &account) {
+server::OrderActionStream &Controller::get_order_entry(std::string_view const &account) {
   if (shared_.settings.ws_api) {
     return get_order_entry_ws(account);
   }

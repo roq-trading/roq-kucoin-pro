@@ -92,8 +92,10 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto state) { return download(state); }} {
+      shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto &event) { return download(event); }} {
 }
+
+// server::Stream
 
 void Rest::operator()(Event<Start> const &) {
   (*connection_).start();
@@ -121,9 +123,9 @@ void Rest::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
-void Rest::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+void Rest::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
   connection_status_ = connection_status;
-  TraceInfo trace_info;
   auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = {},
@@ -143,17 +145,21 @@ void Rest::operator()(ConnectionStatus connection_status, std::string_view const
   create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
-void Rest::operator()(Trace<web::rest::Connected> const &) {
+// web::rest::Client::Handler
+
+void Rest::operator()(Trace<web::rest::Connected> const &event) {
+  auto &[trace_info, connected] = event;
   if (download_.downloading()) {
-    download_.bump();
+    download_.bump(trace_info);
   } else {
-    download_.begin();
+    download_.begin(trace_info);
   }
 }
 
-void Rest::operator()(Trace<web::rest::Disconnected> const &) {
+void Rest::operator()(Trace<web::rest::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
-  (*this)(ConnectionStatus::DISCONNECTED);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
   if (!download_.downloading()) {
     download_.reset();
   }
@@ -170,22 +176,25 @@ void Rest::operator()(Trace<web::rest::Latency> const &event) {
   latency_.ping.update(latency.sample);
 }
 
-uint32_t Rest::download(State state) {
+// core::Download
+
+int32_t Rest::download(Trace<State> const &event) {
+  auto &[trace_info, state] = event;
   switch (state) {
     using enum State;
     case UNDEFINED:
       assert(false);
       break;
     case CURRENCIES:
-      (*this)(ConnectionStatus::DOWNLOADING, "currencies"sv);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "currencies"sv);
       get_currencies();
       return 1;
     case INSTRUMENT:
-      (*this)(ConnectionStatus::DOWNLOADING, "instrument"sv);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "instrument"sv);
       get_instrument();
       return 1;
     case DONE:
-      (*this)(ConnectionStatus::READY);
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
       return 0;
   }
   assert(false);
@@ -218,6 +227,7 @@ void Rest::get_currencies() {
 void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   auto const STATE = State::CURRENCIES;
   profile_.currencies_ack([&]() {
+    auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
       download_.retry(STATE);
@@ -228,9 +238,8 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
       } else {
         protocol::json::CurrenciesAck currencies_ack{body, decode_buffer_};
         if (currencies_ack.code == SYSTEM_CODE_SUCCESS) {
-          Trace event_2{event, currencies_ack};
-          (*this)(event_2);
-          download_.check(STATE);
+          create_trace_and_dispatch_2(trace_info, currencies_ack);
+          download_.check(trace_info, STATE);
         } else {
           handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(currencies_ack.code), currencies_ack.msg);
         }
@@ -276,6 +285,7 @@ void Rest::get_instrument() {
 void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   auto const STATE = State::INSTRUMENT;
   profile_.instrument_ack([&]() {
+    auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
       download_.retry(STATE);
@@ -286,9 +296,8 @@ void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t 
       } else {
         protocol::json::InstrumentAck instrument_ack{body, decode_buffer_};
         if (instrument_ack.code == SYSTEM_CODE_SUCCESS) {
-          Trace event_2{event, instrument_ack};
-          (*this)(event_2);
-          download_.check(STATE);
+          create_trace_and_dispatch_2(trace_info, instrument_ack);
+          download_.check(trace_info, STATE);
         } else {
           handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(instrument_ack.code), instrument_ack.msg);
         }
@@ -363,6 +372,8 @@ void Rest::operator()(Trace<protocol::json::InstrumentAck> const &event) {
   }
   // XXX FIXME TODO trading_status
 }
+
+// helpers
 
 void Rest::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
   auto &[trace_info, response] = event;

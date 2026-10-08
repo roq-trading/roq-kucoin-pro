@@ -16,8 +16,9 @@
 
 #include "roq/server.hpp"
 
+#include "roq/server/stream.hpp"
+
 #include "roq/kucoin_pro/gateway/account.hpp"
-#include "roq/kucoin_pro/gateway/order_entry.hpp"
 #include "roq/kucoin_pro/gateway/shared.hpp"
 
 #include "roq/kucoin_pro/protocol/json/ws_parser.hpp"
@@ -26,21 +27,32 @@ namespace roq {
 namespace kucoin_pro {
 namespace gateway {
 
-struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handler, public protocol::json::WSParser::Handler {
+struct OrderEntryWS final : public Base<OrderEntryWS>,
+                            public server::OrderActionStream,
+                            public web::socket::Client::Handler,
+                            public protocol::json::WSParser::Handler {
   struct Handler {};
 
   OrderEntryWS(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  OrderEntryWS(OrderEntryWS const &) = delete;
+  // protected:
+  friend base_type;
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  // server::Stream
 
-  void operator()(metrics::Writer &) const;
+  uint16_t stream_id() const override { return stream_id_; }
 
- protected:
-  // OrderEntry
+  bool ready() const override;
+
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
+
+  void operator()(metrics::Writer &) const override;
+
+  void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
+
+  // server::OrderActionStream
 
   uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
   uint16_t operator()(
@@ -70,16 +82,7 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   //
   std::string_view get_query() const override;
 
- private:
-  bool ready() const override;
-
-  void operator()(ConnectionStatus, std::string_view const &reason = {});
-
-  void send_ping(std::chrono::nanoseconds now);
-
-  void parse(std::string_view const &message);
-
-  // protocol::json::WSParser::Handler {
+  // protocol::json::WSParser::Handler
 
   void operator()(Trace<protocol::json::WSAuth> const &, std::string_view const &message) override;
   void operator()(Trace<protocol::json::WSWelcome> const &) override;
@@ -87,6 +90,12 @@ struct OrderEntryWS final : public OrderEntry, public web::socket::Client::Handl
   void operator()(Trace<protocol::json::WSPong> const &) override;
   void operator()(Trace<protocol::json::WSAddOrderAck> const &) override;
   void operator()(Trace<protocol::json::WSCancelOrderAck> const &) override;
+
+  // helpers
+
+  void send_ping(std::chrono::nanoseconds now);
+
+  void parse(std::string_view const &message);
 
  private:
   [[maybe_unused]] Handler &handler_;
