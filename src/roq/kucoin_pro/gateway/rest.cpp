@@ -215,12 +215,8 @@ void Rest::get_currencies() {
         .body = {},
         .quality_of_service = {},
     };
-    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_currencies_ack(event, sequence);
-    };
-    (*connection_)("currencies"sv, request, callback);
+    auto callback = [this, sequence = download_.sequence()](auto &event, [[maybe_unused]] auto &request_id) { get_currencies_ack(event, sequence); };
+    (*connection_)(request, callback, "currencies"sv);
   });
 }
 
@@ -273,12 +269,8 @@ void Rest::get_instrument() {
         .body = {},
         .quality_of_service = {},
     };
-    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_instrument_ack(event, sequence);
-    };
-    (*connection_)("instrument"sv, request, callback);
+    auto callback = [this, sequence = download_.sequence()](auto &event, [[maybe_unused]] auto &request_id) { get_instrument_ack(event, sequence); };
+    (*connection_)(request, callback, "instrument"sv);
   });
 }
 
