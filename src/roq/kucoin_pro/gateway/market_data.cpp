@@ -101,25 +101,25 @@ MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_i
 
 // server::Stream
 
-void MarketData::operator()(Event<Start> const &) {
+void MarketData::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void MarketData::operator()(Event<Stop> const &) {
+void MarketData::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void MarketData::operator()(Event<Timer> const &event) {
-  auto now = event.value.now;
-  (*connection_).refresh(now);
+void MarketData::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  (*connection_).refresh(timer.now);
   if ((*connection_).ready()) {
     if (welcome_) {
-      if (next_ping_ < now) {
-        send_ping(now);
+      if (next_ping_ < timer.now) {
+        send_ping(timer.now);
       }
-      check_subscribe_queue(now);
+      check_subscribe_queue(timer.now);
     }
-  } else if (logon_timeout_.count() && logon_timeout_ < now) {
+  } else if (logon_timeout_.count() && logon_timeout_ < timer.now) {
     assert(!welcome_);
     log::warn("Did not receive the welcome message, disconnecting now..."sv);
     (*connection_).close();
@@ -180,8 +180,7 @@ void MarketData::subscribe(size_t start_from) {
 void MarketData::operator()(Trace<web::socket::Connected> const &event) {
   auto &[trace_info, connected] = event;
   assert(logon_timeout_.count() == 0);
-  auto now = clock::get_system();
-  logon_timeout_ = now + shared_.settings.ws.request_timeout;
+  logon_timeout_ = trace_info.origin_create_time + shared_.settings.ws.request_timeout;
 }
 
 void MarketData::operator()(Trace<web::socket::Disconnected> const &event) {

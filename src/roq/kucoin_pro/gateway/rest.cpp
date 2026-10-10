@@ -97,17 +97,17 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
 
 // server::Stream
 
-void Rest::operator()(Event<Start> const &) {
+void Rest::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void Rest::operator()(Event<Stop> const &) {
+void Rest::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void Rest::operator()(Event<Timer> const &event) {
-  auto now = event.value.now;
-  (*connection_).refresh(now);
+void Rest::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  (*connection_).refresh(timer.now);
 }
 
 void Rest::operator()(metrics::Writer &writer) const {

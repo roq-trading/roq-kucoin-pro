@@ -112,31 +112,31 @@ bool DropCopy::ready() const {
   return (*connection_).ready();
 }
 
-void DropCopy::operator()(Event<Start> const &) {
+void DropCopy::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void DropCopy::operator()(Event<Stop> const &) {
+void DropCopy::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void DropCopy::operator()(Event<Timer> const &event) {
-  auto now = event.value.now;
-  (*connection_).refresh(now);
+void DropCopy::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  (*connection_).refresh(timer.now);
   if ((*connection_).ready()) {
     if (welcome_) {
-      if (next_ping_ < now) {
-        send_ping(now);
+      if (next_ping_ < timer.now) {
+        send_ping(timer.now);
       }
     }
-  } else if (logon_timeout_.count() && logon_timeout_ < now) {
+  } else if (logon_timeout_.count() && logon_timeout_ < timer.now) {
     assert(!welcome_);
     log::warn("Did not receive the welcome message, disconnecting now..."sv);
     (*connection_).close();
   }
   check_response_private_token();
   // DEBUG
-  if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < now) {
+  if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < timer.now) {
     next_simulated_disconnect_ = {};
     request_private_token();
   }
@@ -187,11 +187,10 @@ void DropCopy::operator()(Trace<ConnectionStatus> const &event, std::string_view
 void DropCopy::operator()(Trace<web::socket::Connected> const &event) {
   auto &[trace_info, connected] = event;
   assert(logon_timeout_.count() == 0);
-  auto now = clock::get_system();
-  logon_timeout_ = now + shared_.settings.ws.request_timeout;
+  logon_timeout_ = trace_info.origin_create_time + shared_.settings.ws.request_timeout;
   // DEBUG
   if (shared_.settings.misc.experimental_simulate_expired_token.count()) {
-    next_simulated_disconnect_ = now + shared_.settings.misc.experimental_simulate_expired_token;
+    next_simulated_disconnect_ = trace_info.origin_create_time + shared_.settings.misc.experimental_simulate_expired_token;
   }
 }
 
