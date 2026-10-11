@@ -361,7 +361,7 @@ void OrderEntryREST::operator()(Trace<protocol::json::Token> const &event) {
       .account = account_.name,
       .query = query,
   };
-  handler_(private_token);
+  create_trace_and_dispatch(handler_, trace_info, private_token);
 }
 
 // account
@@ -872,7 +872,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
     if (!ready()) [[unlikely]] {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &cancel_all_orders = event.value;
+    auto &[message_info, cancel_all_orders] = event;
     auto send_ack = [&](auto &symbol) {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
           .stream_id = stream_id_,
@@ -892,8 +892,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
           .user = {},
           .strategy_id = cancel_all_orders.strategy_id,
       };
-      TraceInfo trace_info{event};
-      create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
+      create_trace_and_dispatch(shared_.dispatcher, message_info, cancel_all_orders_ack);
     };
     auto callback = [&](auto &symbol) {
       if (!std::empty(cancel_all_orders.symbol) && symbol != cancel_all_orders.symbol) {
@@ -947,7 +946,7 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
           .user = {},
           .strategy_id = {},
       };
-      create_trace_and_dispatch(shared_.dispatcher, event, cancel_all_orders_ack);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
     };
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(DEBUG origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);

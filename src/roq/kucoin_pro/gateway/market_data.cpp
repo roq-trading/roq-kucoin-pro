@@ -221,7 +221,7 @@ void MarketData::operator()(Trace<web::socket::Text> const &) {
 void MarketData::operator()(Trace<web::socket::Binary> const &event) {
   auto &[trace_info, binary] = event;
   std::string_view payload{reinterpret_cast<char const *>(std::data(binary.payload)), std::size(binary.payload)};
-  parse(payload);
+  parse(trace_info, payload);
   counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
@@ -520,11 +520,10 @@ void MarketData::send_ping(std::chrono::nanoseconds now) {
   (*connection_).send_text(message);
 }
 
-void MarketData::parse(std::string_view const &message) {
+void MarketData::parse(TraceInfo const &trace_info, std::string_view const &message) {
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
-      TraceInfo trace_info;
       if (!protocol::json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }

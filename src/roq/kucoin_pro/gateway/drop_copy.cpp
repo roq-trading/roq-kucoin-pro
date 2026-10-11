@@ -98,7 +98,8 @@ DropCopy::DropCopy(
       account_{account}, shared_{shared}, request_{request}, download_{{}, [this](auto &event) { return download(event); }} {
 }
 
-void DropCopy::operator()(PrivateToken const &private_token) {
+void DropCopy::operator()(Trace<PrivateToken> const &event) {
+  auto &[trace_info, private_token] = event;
   if (!std::empty(private_token.query) && query_ != private_token.query) {
     query_ = private_token.query;
     log::warn(R"(DEBUG private_token="{}")"sv, query_);
@@ -232,7 +233,7 @@ void DropCopy::operator()(Trace<web::socket::Text> const &) {
 void DropCopy::operator()(Trace<web::socket::Binary> const &event) {
   auto &[trace_info, binary] = event;
   std::string_view payload{reinterpret_cast<char const *>(std::data(binary.payload)), std::size(binary.payload)};
-  parse(payload);
+  parse(trace_info, payload);
 }
 
 // core::Download
@@ -394,11 +395,10 @@ void DropCopy::send_ping(std::chrono::nanoseconds now) {
   (*connection_).send_text(message);
 }
 
-void DropCopy::parse(std::string_view const &message) {
+void DropCopy::parse(TraceInfo const &trace_info, std::string_view const &message) {
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
-      TraceInfo trace_info;
       if (!protocol::json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }

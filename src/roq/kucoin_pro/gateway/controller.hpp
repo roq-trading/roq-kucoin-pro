@@ -30,7 +30,8 @@ namespace roq {
 namespace kucoin_pro {
 namespace gateway {
 
-struct Controller final : public server::Handler,
+struct Controller final : public Base<Controller>,
+                          public server::Handler,
                           public Rest::Handler,
                           public OrderEntryREST::Handler,
                           public OrderEntryWS::Handler,
@@ -45,6 +46,8 @@ struct Controller final : public server::Handler,
   Controller(Controller const &) = delete;
 
  protected:
+  friend base_type;
+
   // server::Handler
 
   void operator()(Trace<Start> const &) override;
@@ -81,15 +84,15 @@ struct Controller final : public server::Handler,
 
   // Rest::Handler
 
-  void operator()(Rest::SymbolsUpdate &) override;
+  void operator()(Trace<SymbolsUpdate> const &) override;
 
   // OrderEntry::Handler / DropCopy::Handler
 
-  void operator()(PrivateToken const &) override;
+  void operator()(Trace<PrivateToken> const &) override;
 
   // helpers
 
-  void ensure_symbol_slices(size_t size);
+  void ensure_symbol_slices(TraceInfo const &, size_t size);
 
   template <typename... Args>
   void dispatch(Args &&...);

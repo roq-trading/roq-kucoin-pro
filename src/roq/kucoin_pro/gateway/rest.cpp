@@ -357,7 +357,7 @@ void Rest::operator()(Trace<protocol::json::InstrumentAck> const &event) {
     auto symbols_update = SymbolsUpdate{
         .symbols = symbols,
     };
-    handler_(symbols_update);
+    create_trace_and_dispatch(handler_, trace_info, symbols_update);
   }
   if (counter > 0) {
     log::info("Contracts {} / {}"sv, counter, std::size(instrument_ack.data.list));

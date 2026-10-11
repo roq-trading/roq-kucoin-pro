@@ -21,6 +21,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/kucoin_pro/gateway/shared.hpp"
+#include "roq/kucoin_pro/gateway/symbols_update.hpp"
 
 #include "roq/kucoin_pro/protocol/json/currencies_ack.hpp"
 #include "roq/kucoin_pro/protocol/json/instrument_ack.hpp"
@@ -30,18 +31,8 @@ namespace kucoin_pro {
 namespace gateway {
 
 struct Rest final : public Base<Rest>, public server::Stream, public web::rest::Client::Handler {
-  struct PublicToken final {
-    std::string_view uri;
-    std::string_view query;
-    std::chrono::nanoseconds ping_frequency = {};
-  };
-
-  struct SymbolsUpdate final {
-    std::span<Symbol const> symbols;
-  };
-
   struct Handler {
-    virtual void operator()(SymbolsUpdate &) = 0;
+    virtual void operator()(Trace<SymbolsUpdate> const &) = 0;
   };
 
   Rest(Handler &, io::Context &context, uint16_t stream_id, Shared &);

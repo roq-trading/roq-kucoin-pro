@@ -36,7 +36,7 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &, std::string_view const &query);
 
-  void operator()(PrivateToken const &);
+  void operator()(Trace<PrivateToken> const &);
 
   // protected:
   friend base_type;
@@ -106,7 +106,7 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   void send_ping(std::chrono::nanoseconds now);
 
-  void parse(std::string_view const &message);
+  void parse(TraceInfo const &, std::string_view const &message);
 
  private:
   [[maybe_unused]] Handler &handler_;
