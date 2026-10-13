@@ -30,6 +30,8 @@ auto const SUPPORTS = Mask{
     SupportType::POSITION,
 };
 
+uint64_t const REQUEST_ID = 1'000'000;
+
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
 
 auto const PING_FREQUENCY = 60s;
@@ -77,7 +79,7 @@ DropCopy::DropCopy(
     Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request, std::string_view const &query)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account)}, query_{query},
       connection_{create_connection(*this, shared.settings, context, shared)}, ping_frequency_{PING_FREQUENCY},
-      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH}, request_id_{stream_id_ * REQUEST_ID},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -139,7 +141,7 @@ void DropCopy::operator()(Trace<Timer> const &event) {
   // DEBUG
   if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < timer.now) {
     next_simulated_disconnect_ = {};
-    request_private_token();
+    request_private_token(trace_info);
   }
 }
 
@@ -276,7 +278,7 @@ void DropCopy::operator()(Trace<protocol::json::Error> const &event) {
     log::error("error={}"sv, error);
     // XXX FIXME TODO this was carried over from roq-kucoin-futures -- check data
     if (error.code == 401 && error.data == "token is expired"sv) {
-      request_private_token();
+      request_private_token(trace_info);
     }
   });
 }
@@ -337,14 +339,14 @@ void DropCopy::check_response_private_token() {
   }
 }
 
-void DropCopy::request_private_token() {
+void DropCopy::request_private_token(TraceInfo const &trace_info) {
   if (std::empty(query_)) {
     return;
   }
   log::warn("REQUEST PRIVATE TOKEN"sv);
   query_.clear();
   (*connection_).suspend_for(60s);
-  request_.request_private_token = clock::get_system();
+  request_.request_private_token = trace_info.origin_create_time;
   download_private_token_ = true;
 }
 
@@ -356,7 +358,6 @@ void DropCopy::subscribe() {
 }
 
 void DropCopy::subscribe_account(std::string_view const &channel) {
-  auto now = clock::get_system();
   auto message = fmt::format(
       R"({{)"
       R"("id":"{}",)"
@@ -364,13 +365,12 @@ void DropCopy::subscribe_account(std::string_view const &channel) {
       R"("channel":"{}",)"
       R"("accountType":"UNIFIED")"
       R"(}})"sv,
-      now.count(),
+      ++request_id_,
       channel);
   (*connection_).send_text(message);
 }
 
 void DropCopy::subscribe_trade(std::string_view const &channel) {
-  auto now = clock::get_system();
   auto message = fmt::format(
       R"({{)"
       R"("id":"{}",)"
@@ -378,7 +378,7 @@ void DropCopy::subscribe_trade(std::string_view const &channel) {
       R"("channel":"{}",)"
       R"("tradeType":"UNIFIED")"
       R"(}})"sv,
-      now.count(),
+      ++request_id_,
       channel);
   (*connection_).send_text(message);
 }

@@ -131,10 +131,10 @@ void OrderEntryREST::operator()(Trace<Timer> const &event) {
     return;
   }
   if (master_) {
-    check_request_queue(timer.now);
+    check_request_queue(trace_info);
   }
   if (!downloading() && request_.respond_private_token < request_.request_private_token) {
-    get_private_token();
+    get_private_token(trace_info);
     download_private_token_ = true;
   }
 }
@@ -264,27 +264,27 @@ int32_t OrderEntryREST::download(Trace<State> const &event) {
     case PRIVATE_TOKEN:
       if (!has_downloaded_private_token_) {
         create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "private-token"sv);
-        get_private_token();
+        get_private_token(trace_info);
         return 1;
       } else {
         return 0;
       }
     case ACCOUNT:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "account"sv);
-      get_account();
+      get_account(trace_info);
       return 1;
     case POSITION:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "position"sv);
-      get_position();
+      get_position(trace_info);
       return 1;
     case ORDERS:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "orders"sv);
-      get_orders();
+      get_orders(trace_info);
       return 1;
     case EXECUTION:
       if (shared_.settings.download.trades_lookback.count()) {
         create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "execution"sv);
-        get_execution();
+        get_execution(trace_info);
         return 1;
       } else {
         return 0;
@@ -299,11 +299,11 @@ int32_t OrderEntryREST::download(Trace<State> const &event) {
 
 // private-token
 
-void OrderEntryREST::get_private_token() {
+void OrderEntryREST::get_private_token(TraceInfo const &trace_info) {
   profile_.private_token([&]() {
     auto method = web::http::Method::POST;
     auto path = shared_.api.rest_private.bullet_private;
-    auto headers = account_.create_headers(method, path, {}, {});
+    auto headers = account_.create_headers(trace_info, method, path, {}, {});
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -328,7 +328,7 @@ void OrderEntryREST::get_private_token_ack(Trace<web::rest::Response> const &eve
       if (download_.downloading()) {
         download_.retry(STATE);
       }
-      request_.respond_private_token = clock::get_system();  // completion
+      request_.respond_private_token = trace_info.origin_create_time;
       download_private_token_ = false;
     };
     auto handle_success = [&](auto &body) {
@@ -344,7 +344,7 @@ void OrderEntryREST::get_private_token_ack(Trace<web::rest::Response> const &eve
         if (download_.downloading()) {
           download_.check(trace_info, STATE);
         }
-        request_.respond_private_token = clock::get_system();  // completion
+        request_.respond_private_token = trace_info.origin_create_time;
         download_private_token_ = false;
         has_downloaded_private_token_ = true;
       }
@@ -366,12 +366,12 @@ void OrderEntryREST::operator()(Trace<protocol::json::Token> const &event) {
 
 // account
 
-void OrderEntryREST::get_account() {
+void OrderEntryREST::get_account(TraceInfo const &trace_info) {
   profile_.account([&]() {
     auto method = web::http::Method::GET;
     auto path = shared_.api.rest_private.account_balance;
     auto query = "?accountMode=UNIFIED"sv;
-    auto headers = account_.create_headers(method, path, query, {});
+    auto headers = account_.create_headers(trace_info, method, path, query, {});
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -440,12 +440,12 @@ void OrderEntryREST::operator()(Trace<protocol::json::AccountAck> const &event) 
 
 // position
 
-void OrderEntryREST::get_position() {
+void OrderEntryREST::get_position(TraceInfo const &trace_info) {
   profile_.position([&]() {
     auto method = web::http::Method::GET;
     auto path = shared_.api.rest_private.position_open_list;
     auto query = "?accountMode=UNIFIED"sv;
-    auto headers = account_.create_headers(method, path, query, {});
+    auto headers = account_.create_headers(trace_info, method, path, query, {});
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -513,12 +513,12 @@ void OrderEntryREST::operator()(Trace<protocol::json::PositionAck> const &event)
 
 // orders
 
-void OrderEntryREST::get_orders() {
+void OrderEntryREST::get_orders(TraceInfo const &trace_info) {
   profile_.orders([&]() {
     auto method = web::http::Method::GET;
     auto path = shared_.api.rest_private.order_open_list;
     auto query = "?accountMode=UNIFIED&tradeType=FUTURES"sv;
-    auto headers = account_.create_headers(method, path, query, {});
+    auto headers = account_.create_headers(trace_info, method, path, query, {});
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -623,12 +623,12 @@ void OrderEntryREST::operator()(Trace<protocol::json::OrdersAck> const &event) {
 
 // execution
 
-void OrderEntryREST::get_execution() {
+void OrderEntryREST::get_execution(TraceInfo const &trace_info) {
   profile_.execution([&]() {
     auto method = web::http::Method::GET;
     auto path = shared_.api.rest_private.order_execution;
     auto query = "?accountMode=UNIFIED&tradeType=FUTURES"sv;
-    auto headers = account_.create_headers(method, path, query, {});
+    auto headers = account_.create_headers(trace_info, method, path, query, {});
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -726,7 +726,7 @@ void OrderEntryREST::create_order(
     auto method = web::http::Method::POST;
     auto path = shared_.api.rest_private.order_place;
     auto body = protocol::json::Encoder::add_order(encode_buffer_, create_order, order, ref_data, request_id);
-    auto headers = account_.create_headers(method, path, {}, body);
+    auto headers = account_.create_headers(message_info, method, path, {}, body);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -803,7 +803,7 @@ void OrderEntryREST::cancel_order(
     // auto query = "?tradeType=FUTURES"sv;
     std::string_view query;
     auto body = protocol::json::Encoder::cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
-    auto headers = account_.create_headers(method, path, query, body);
+    auto headers = account_.create_headers(message_info, method, path, query, body);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -901,7 +901,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
       auto method = web::http::Method::POST;
       auto path = shared_.api.rest_private.order_cancel_all;
       auto body = protocol::json::Encoder::cancel_all_orders(encode_buffer_, event, request_id, symbol);
-      auto headers = account_.create_headers(method, path, {}, body);
+      auto headers = account_.create_headers(message_info, method, path, {}, body);
       auto request = web::rest::Request{
           .method = method,
           .path = path,
@@ -972,12 +972,12 @@ void OrderEntryREST::operator()(Trace<protocol::json::CancelAllOrdersAck> const 
 // order-book
 
 // XXX FIXME TODO this needs signing
-void OrderEntryREST::get_order_book(std::string_view const &symbol) {
+void OrderEntryREST::get_order_book(TraceInfo const &trace_info, std::string_view const &symbol) {
   profile_.order_book([&]() {
     auto method = web::http::Method::GET;
     auto path = shared_.api.rest_public.market_orderbook;
     auto query = fmt::format("?tradeType=FUTURES&symbol={}&limit=FULL"sv, symbol);
-    auto headers = account_.create_headers(method, path, query, {});
+    auto headers = account_.create_headers(trace_info, method, path, query, {});
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -1075,14 +1075,12 @@ void OrderEntryREST::operator()(Trace<protocol::json::OrderBookAck> const &event
 
 // helpers
 
-void OrderEntryREST::check_request_queue(std::chrono::nanoseconds now) {
-  shared_.depth_request_queue.dispatch(
-      [&](auto now) { return shared_.rate_limiter.can_request(now); },
-      [&](auto &symbol) {
-        log::info(R"(DEBUG Requesting order book snapshot symbol="{}")"sv, symbol);
-        get_order_book(symbol);
-      },
-      now);
+void OrderEntryREST::check_request_queue(TraceInfo const &trace_info) {
+  auto callback = [&](auto &trace_info, auto &symbol) {
+    log::info(R"(DEBUG Requesting order book snapshot symbol="{}")"sv, symbol);
+    get_order_book(trace_info, symbol);
+  };
+  shared_.depth_request_queue.dispatch(trace_info, callback);
 }
 
 void OrderEntryREST::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
