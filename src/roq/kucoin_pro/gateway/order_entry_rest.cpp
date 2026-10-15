@@ -133,10 +133,7 @@ void OrderEntryREST::operator()(Trace<Timer> const &event) {
   if (master_) {
     check_request_queue(trace_info);
   }
-  if (!downloading() && request_.respond_private_token < request_.request_private_token) {
-    get_private_token(trace_info);
-    download_private_token_ = true;
-  }
+  request_.private_token.check_pending(trace_info, [this](auto &trace_info) { get_private_token(trace_info); });
 }
 
 void OrderEntryREST::operator()(metrics::Writer &writer) const {
@@ -238,7 +235,6 @@ void OrderEntryREST::operator()(Trace<web::rest::Disconnected> const &event) {
   if (!download_.downloading()) {
     download_.reset();
   }
-  download_private_token_ = false;
 }
 
 void OrderEntryREST::operator()(Trace<web::rest::Latency> const &event) {
@@ -262,7 +258,7 @@ int32_t OrderEntryREST::download(Trace<State> const &event) {
       assert(false);
       break;
     case PRIVATE_TOKEN:
-      if (!has_downloaded_private_token_) {
+      if (!has_downloaded_private_token_) {  // note! only initial
         create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "private-token"sv);
         get_private_token(trace_info);
         return 1;
@@ -328,8 +324,6 @@ void OrderEntryREST::get_private_token_ack(Trace<web::rest::Response> const &eve
       if (download_.downloading()) {
         download_.retry(STATE);
       }
-      request_.respond_private_token = trace_info.origin_create_time;
-      download_private_token_ = false;
     };
     auto handle_success = [&](auto &body) {
       if (download_.downloading() && download_.skip(sequence, STATE)) {
@@ -344,12 +338,11 @@ void OrderEntryREST::get_private_token_ack(Trace<web::rest::Response> const &eve
         if (download_.downloading()) {
           download_.check(trace_info, STATE);
         }
-        request_.respond_private_token = trace_info.origin_create_time;
-        download_private_token_ = false;
         has_downloaded_private_token_ = true;
       }
     };
     process_response(event, handle_error, handle_success);
+    request_.private_token.commit(trace_info);
   });
 }
 

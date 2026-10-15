@@ -165,8 +165,6 @@ struct OrderEntryREST final : public Base<OrderEntryREST>, public server::OrderA
 
   // helpers
 
-  bool downloading() const { return download_private_token_; }
-
   void check_request_queue(TraceInfo const &);
 
   void process_response(Trace<web::rest::Response> const &, auto error_handler, auto success_handler);
@@ -210,7 +208,6 @@ struct OrderEntryREST final : public Base<OrderEntryREST>, public server::OrderA
   //
   std::string encode_buffer_;
   //
-  bool download_private_token_ = false;
   bool has_downloaded_private_token_ = false;
 };
 
