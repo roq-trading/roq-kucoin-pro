@@ -24,13 +24,12 @@ namespace {
 auto const NAME = "om"sv;
 
 auto const SUPPORTS = Mask{
+    SupportType::FUNDS,
+    SupportType::POSITION,
     SupportType::CREATE_ORDER,
     SupportType::CANCEL_ORDER,
     SupportType::ORDER_ACK,
-    SupportType::ORDER,
     SupportType::TRADE,
-    SupportType::FUNDS,
-    SupportType::POSITION,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 2;
@@ -126,14 +125,14 @@ void OrderEntryREST::operator()(Trace<Stop> const &) {
 
 void OrderEntryREST::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
-  if (!ready()) {
-    return;
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
+      if (master_) {
+        check_request_queue(trace_info);
+      }
+      request_.private_token.check_pending(trace_info, [this](auto &trace_info) { get_private_token(trace_info); });
+    }
   }
-  if (master_) {
-    check_request_queue(trace_info);
-  }
-  request_.private_token.check_pending(trace_info, [this](auto &trace_info) { get_private_token(trace_info); });
 }
 
 void OrderEntryREST::operator()(metrics::Writer &writer) const {
@@ -252,6 +251,7 @@ void OrderEntryREST::operator()(Trace<web::rest::Latency> const &event) {
 
 int32_t OrderEntryREST::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
+  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   switch (state) {
     using enum State;
     case UNDEFINED:
@@ -259,27 +259,27 @@ int32_t OrderEntryREST::download(Trace<State> const &event) {
       break;
     case PRIVATE_TOKEN:
       if (!has_downloaded_private_token_) {  // note! only initial
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "private-token"sv);
+        publish_downloading();
         get_private_token(trace_info);
         return 1;
       } else {
         return 0;
       }
     case ACCOUNT:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "account"sv);
+      publish_downloading();
       get_account(trace_info);
       return 1;
     case POSITION:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "position"sv);
+      publish_downloading();
       get_position(trace_info);
       return 1;
     case ORDERS:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "orders"sv);
+      publish_downloading();
       get_orders(trace_info);
       return 1;
     case EXECUTION:
       if (shared_.settings.download.trades_lookback.count()) {
-        create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "execution"sv);
+        publish_downloading();
         get_execution(trace_info);
         return 1;
       } else {

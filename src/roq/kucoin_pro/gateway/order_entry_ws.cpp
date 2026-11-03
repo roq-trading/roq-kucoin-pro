@@ -96,10 +96,6 @@ OrderEntryWS::OrderEntryWS(Handler &handler, io::Context &context, uint16_t stre
 
 // server::Stream
 
-bool OrderEntryWS::ready() const {
-  return (*connection_).ready();
-}
-
 void OrderEntryWS::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
@@ -110,9 +106,8 @@ void OrderEntryWS::operator()(Trace<Stop> const &) {
 
 void OrderEntryWS::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
-  if ((*connection_).ready()) {
-    if (welcome_) {
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
       if (next_ping_ < timer.now) {
         send_ping(timer.now);
       }

@@ -23,11 +23,11 @@ namespace {
 auto const NAME = "ex"sv;
 
 auto const SUPPORTS = Mask{
+    SupportType::FUNDS,
+    SupportType::POSITION,
     SupportType::ORDER_ACK,
     SupportType::ORDER,
     SupportType::TRADE,
-    SupportType::FUNDS,
-    SupportType::POSITION,
 };
 
 uint64_t const REQUEST_ID = 1'000'000;
@@ -111,10 +111,6 @@ void DropCopy::operator()(Trace<PrivateToken> const &event) {
 
 // server::Stream
 
-bool DropCopy::ready() const {
-  return (*connection_).ready();
-}
-
 void DropCopy::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
@@ -125,23 +121,22 @@ void DropCopy::operator()(Trace<Stop> const &) {
 
 void DropCopy::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
-  if ((*connection_).ready()) {
-    if (welcome_) {
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
       if (next_ping_ < timer.now) {
         send_ping(timer.now);
+      }
+      check_response_private_token();
+      // DEBUG
+      if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < timer.now) {
+        next_simulated_disconnect_ = {};
+        request_private_token(trace_info);
       }
     }
   } else if (logon_timeout_.count() && logon_timeout_ < timer.now) {
     assert(!welcome_);
     log::warn("Did not receive the welcome message, disconnecting now..."sv);
     (*connection_).close();
-  }
-  check_response_private_token();
-  // DEBUG
-  if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < timer.now) {
-    next_simulated_disconnect_ = {};
-    request_private_token(trace_info);
   }
 }
 
@@ -242,13 +237,14 @@ void DropCopy::operator()(Trace<web::socket::Binary> const &event) {
 
 int32_t DropCopy::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
+  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   switch (state) {
     using enum State;
     case UNDEFINED:
       assert(false);
       break;
     case SUBSCRIBE:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "subscribe"sv);
+      publish_downloading();
       subscribe();
       return 0;
     case DONE:
