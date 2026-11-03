@@ -32,7 +32,7 @@
     },
     {
       "name": "tradingStatus",
-      "type": "std/int32"
+      "type": "roq/kucoin_pro/protocol/json/Status"
     },
     {
       "name": "settlementCurrency",
@@ -145,6 +145,26 @@
     },
     {
       "name": "preMarketToPerpDate"
+    },
+    {
+      "name": "tradingStartTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "maxMarketOrderSize",
+      "type": "std/double"
+    },
+    {
+      "name": "priceLimitRatio",
+      "type": "std/double"
+    },
+    {
+      "name": "assetClass",
+      "type": "std/string_view"
+    },
+    {
+      "name": "subMarketType",
+      "type": "std/string_view"
     }
   ]
 }

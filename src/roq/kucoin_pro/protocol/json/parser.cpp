@@ -59,8 +59,8 @@ bool Parser::dispatch(
         }
         break;
       case utils::hash::FNV::compute(KEY_RESULT):
-        result = true;  // silent
-        break;
+        result = dispatch_helper<Ack>(handler, message, buffer_stack, trace_info);
+        return true;
       case utils::hash::FNV::compute(KEY_T): {
         Channel channel{value};
         switch (channel) {

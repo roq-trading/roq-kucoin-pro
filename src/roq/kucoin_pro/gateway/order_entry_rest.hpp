@@ -95,10 +95,6 @@ struct OrderEntryREST final : public Base<OrderEntryREST>, public server::OrderA
   enum class State {
     UNDEFINED = 0,
     PRIVATE_TOKEN,
-    ACCOUNT,
-    POSITION,
-    ORDERS,
-    EXECUTION,
     DONE,
   };
 
@@ -113,25 +109,31 @@ struct OrderEntryREST final : public Base<OrderEntryREST>, public server::OrderA
   // account
 
   void get_account(TraceInfo const &);
-  void get_account_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void get_account_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::AccountAck> const &);
 
   // position
 
   void get_position(TraceInfo const &);
-  void get_position_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void get_position_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::PositionAck> const &);
 
   // orders
 
   void get_orders(TraceInfo const &);
-  void get_orders_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void get_orders_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::OrdersAck> const &);
+
+  // order
+
+  void get_order(TraceInfo const &, std::string_view const &client_order_id, std::string_view const &external_order_id, std::string_view const &symbol);
+  void get_order_ack(Trace<web::rest::Response> const &, std::string_view const &client_order_id);
+  // void operator()(Trace<protocol::json::OrdersAck> const &);
 
   // execution
 
   void get_execution(TraceInfo const &);
-  void get_execution_ack(Trace<web::rest::Response> const &, uint32_t sequence);
+  void get_execution_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::ExecutionAck> const &);
 
   // add-order
@@ -209,6 +211,8 @@ struct OrderEntryREST final : public Base<OrderEntryREST>, public server::OrderA
   std::string encode_buffer_;
   //
   bool has_downloaded_private_token_ = false;
+  //
+  size_t download_stale_orders_counter_ = {};
 };
 
 }  // namespace gateway

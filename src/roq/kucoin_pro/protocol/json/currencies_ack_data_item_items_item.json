@@ -43,8 +43,36 @@
       "type": "std/string_view"
     },
     {
+      "name": "depositFeeRate",
+      "type": "std/double"
+    },
+    {
+      "name": "depositTierFee",
+      "comment": "not sure what type..."
+    },
+    {
       "name": "withdrawPrecision",
       "type": "std/int32"
+    },
+    {
+      "name": "chain",
+      "type": "std/string_view"
+    },
+    {
+      "name": "addressRegex",
+      "type": "std/string_view"
+    },
+    {
+      "name": "memoRegex",
+      "type": "std/string_view"
+    },
+    {
+      "name": "maxWithdrawFee",
+      "type": "std/double"
+    },
+    {
+      "name": "isMemoRequired",
+      "type": "std/bool"
     },
     {
       "name": "maxWithdrawSize",
@@ -55,8 +83,12 @@
       "type": "std/double"
     },
     {
-      "name": "isMemoRequired",
-      "type": "std/bool"
+      "name": "fixedDepositFee",
+      "type": "std/double"
+    },
+    {
+      "name": "maxDepositFee",
+      "type": "std/double"
     },
     {
       "name": "chainId",

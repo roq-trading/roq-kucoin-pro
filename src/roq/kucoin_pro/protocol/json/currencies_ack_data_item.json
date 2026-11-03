@@ -19,6 +19,14 @@
       "type": "std/int32"
     },
     {
+      "name": "confirms",
+      "type": "std/int32"
+    },
+    {
+      "name": "contractAddress",
+      "type": "std/string_view"
+    },
+    {
       "name": "isMarginEnabled",
       "type": "std/bool"
     },
@@ -27,7 +35,7 @@
       "type": "std/bool"
     },
     {
-      "name": "items",
+      "name": "list",
       "type": "roq/kucoin_pro/protocol/json/CurrenciesAckDataItemItemsItem",
       "array": "std/span"
     }

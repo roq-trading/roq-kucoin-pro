@@ -24,8 +24,10 @@ struct API final {
     std::string_view account_balance;
     std::string_view position_open_list;
     std::string_view order_open_list;
+    std::string_view order_details;
     std::string_view order_execution;
     std::string_view order_place;
+    std::string_view order_amend;
     std::string_view order_cancel;
     std::string_view order_cancel_all;
   } rest_private;

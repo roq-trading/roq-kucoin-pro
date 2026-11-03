@@ -3,13 +3,13 @@
   "type": "dictionary",
   "values": [
     {
-      "name": "type",
-      "type": "roq/kucoin_pro/protocol/json/Type"
-    },
-    {
       "name": "id",
       "type": "std/string_view",
       "optional": true
+    },
+    {
+      "name": "result",
+      "type": "std/bool"
     }
   ]
 }

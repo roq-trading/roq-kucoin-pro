@@ -72,7 +72,15 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   enum class State {
     UNDEFINED = 0,
-    SUBSCRIBE,
+    SUBSCRIBE_BALANCES,
+    GET_BALANCES,
+    SUBSCRIBE_POSITIONS,
+    GET_POSITIONS,
+    SUBSCRIBE_ORDERS,
+    GET_OPEN_ORDERS,
+    GET_STALE_ORDERS,
+    SUBSCRIBE_TRADES,
+    GET_TRADES,
     DONE,
   };
 
@@ -99,12 +107,15 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   void request_private_token(TraceInfo const &);
 
-  void subscribe();
-
-  void subscribe_account(std::string_view const &channel);
-  void subscribe_trade(std::string_view const &channel);
+  void subscribe_account(State, std::string_view const &channel);
+  void subscribe_trade(State, std::string_view const &channel);
 
   void send_ping(std::chrono::nanoseconds now);
+
+  void check_request_queue(TraceInfo const &);
+
+  bool check_stale_orders();
+  void check_stale_orders(TraceInfo const &);
 
   void parse(TraceInfo const &, std::string_view const &message);
 
@@ -145,6 +156,7 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
   std::chrono::nanoseconds next_ping_ = {};
   //
   std::chrono::nanoseconds next_simulated_disconnect_ = {};
+  std::chrono::nanoseconds next_check_stale_orders_ = {};
 };
 
 }  // namespace gateway

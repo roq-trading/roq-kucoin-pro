@@ -34,7 +34,9 @@ uint64_t const REQUEST_ID = 1'000'000;
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
 
-auto const PING_FREQUENCY = 60s;
+auto const PING_FREQUENCY = 300;
+
+auto const CHECK_STALE_ORDERS_FREQ = 10s;
 }  // namespace
 
 // === HELPERS ===
@@ -122,11 +124,15 @@ void DropCopy::operator()(Trace<Stop> const &) {
 void DropCopy::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if ((*connection_).refresh(timer.now)) {
+    check_request_queue(trace_info);
     if (ready()) {
-      if (next_ping_ < timer.now) {
+      if (next_ping_ < trace_info.origin_create_time) {
+        assert(ping_frequency_.count() > 0);
+        next_ping_ = trace_info.origin_create_time + ping_frequency_ / 2;
         send_ping(timer.now);
       }
       check_response_private_token();
+      check_stale_orders(trace_info);
       // DEBUG
       if (next_simulated_disconnect_.count() && next_simulated_disconnect_ < timer.now) {
         next_simulated_disconnect_ = {};
@@ -243,10 +249,50 @@ int32_t DropCopy::download(Trace<State> const &event) {
     case UNDEFINED:
       assert(false);
       break;
-    case SUBSCRIBE:
+    case SUBSCRIBE_BALANCES:
       publish_downloading();
-      subscribe();
-      return 0;
+      subscribe_account(state, "balance"sv);
+      return 1;
+    case GET_BALANCES:
+      publish_downloading();
+      request_.balances.request(trace_info);
+      return 1;
+    case SUBSCRIBE_POSITIONS:
+      publish_downloading();
+      subscribe_trade(state, "positionAll"sv);
+      return 1;
+    case GET_POSITIONS:
+      publish_downloading();
+      request_.positions.request(trace_info);
+      return 1;
+    case SUBSCRIBE_ORDERS:
+      publish_downloading();
+      subscribe_trade(state, "orderAll"sv);
+      return 1;
+    case GET_OPEN_ORDERS:
+      publish_downloading();
+      request_.open_orders.request(trace_info);
+      return 1;
+    case GET_STALE_ORDERS:
+      if (std::empty(request_.details_stale_orders)) {
+        return 0;
+      } else {
+        publish_downloading();
+        request_.stale_orders.request(trace_info);
+        return 1;
+      }
+    case SUBSCRIBE_TRADES:
+      publish_downloading();
+      subscribe_trade(state, "execution"sv);  // 2026-02-22: not currently supported by exchange
+      return 1;
+    case GET_TRADES:
+      if (shared_.settings.download.trades_lookback.count()) {
+        publish_downloading();
+        request_.trades.request(trace_info);
+        return 1;
+      } else {
+        return 0;
+      }
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
       assert(!ready_);
@@ -290,6 +336,13 @@ void DropCopy::operator()(Trace<protocol::json::Ack> const &event) {
   profile_.ack([&]() {
     auto &[trace_info, ack] = event;
     log::info<2>("ack={}"sv, ack);
+    auto request_id = magic_enum::enum_cast<State>(ack.id);
+    if (request_id.has_value()) {
+      auto state = request_id.value();
+      download_.check(trace_info, state);
+    } else {
+      log::warn(R"(Unexpected: request_id="{}")"sv, ack.id);
+    }
   });
 }
 
@@ -344,14 +397,7 @@ void DropCopy::request_private_token(TraceInfo const &trace_info) {
   request_.private_token.request(trace_info);
 }
 
-void DropCopy::subscribe() {
-  subscribe_account("balance"sv);
-  subscribe_trade("positionAll"sv);
-  subscribe_trade("orderAll"sv);
-  subscribe_trade("execution"sv);  // 2026-02-22: not currently supported by exchange
-}
-
-void DropCopy::subscribe_account(std::string_view const &channel) {
+void DropCopy::subscribe_account(State state, std::string_view const &channel) {
   auto message = fmt::format(
       R"({{)"
       R"("id":"{}",)"
@@ -359,12 +405,12 @@ void DropCopy::subscribe_account(std::string_view const &channel) {
       R"("channel":"{}",)"
       R"("accountType":"UNIFIED")"
       R"(}})"sv,
-      ++request_id_,
+      state,
       channel);
   (*connection_).send_text(message);
 }
 
-void DropCopy::subscribe_trade(std::string_view const &channel) {
+void DropCopy::subscribe_trade(State state, std::string_view const &channel) {
   auto message = fmt::format(
       R"({{)"
       R"("id":"{}",)"
@@ -372,14 +418,12 @@ void DropCopy::subscribe_trade(std::string_view const &channel) {
       R"("channel":"{}",)"
       R"("tradeType":"UNIFIED")"
       R"(}})"sv,
-      ++request_id_,
+      state,
       channel);
   (*connection_).send_text(message);
 }
 
 void DropCopy::send_ping(std::chrono::nanoseconds now) {
-  assert(ping_frequency_.count() > 0);
-  next_ping_ = now + ping_frequency_ / 2;
   auto message = fmt::format(
       R"({{)"
       R"("id":{},)"
@@ -387,6 +431,89 @@ void DropCopy::send_ping(std::chrono::nanoseconds now) {
       R"(}})"sv,
       now.count());
   (*connection_).send_text(message);
+}
+
+void DropCopy::check_request_queue(TraceInfo const &trace_info) {
+  auto state = download_.state();
+  switch (state) {
+    using enum State;
+    case UNDEFINED:
+      break;
+    case SUBSCRIBE_BALANCES:
+      break;
+    case GET_BALANCES:
+      if (request_.balances.has_response()) {
+        download_.check(trace_info, state);
+      }
+      break;
+    case SUBSCRIBE_POSITIONS:
+      break;
+    case GET_POSITIONS:
+      if (request_.positions.has_response()) {
+        download_.check(trace_info, state);
+      }
+      break;
+    case SUBSCRIBE_ORDERS:
+      break;
+    case GET_OPEN_ORDERS:
+      if (request_.open_orders.has_response()) {
+        check_stale_orders();  // note! *before* updating download
+        download_.check(trace_info, state);
+      }
+      break;
+    case GET_STALE_ORDERS:
+      if (request_.stale_orders.has_response()) {
+        if (!std::empty(request_.details_stale_orders)) {
+          log::fatal("Unexpected"sv);
+        }
+        download_.check(trace_info, state);
+      }
+      break;
+    case SUBSCRIBE_TRADES:
+      break;
+    case GET_TRADES:
+      if (request_.trades.has_response()) {
+        download_.check(trace_info, state);
+      }
+      break;
+    case DONE:
+      break;
+  }
+}
+
+bool DropCopy::check_stale_orders() {
+  size_t counter = 0;
+  auto helper = [&](auto &order) {
+    auto key = std::make_pair(order.user_id, order.order_id);
+    auto res = request_.details_stale_orders.insert(key);
+    if (res.second) {
+      log::warn(
+          R"(DEBUG stale order: )"
+          R"(order_id={}, client_order_id="{}", external_order_id="{}")"sv,
+          order.order_id,
+          order.client_order_id,
+          order.external_order_id);
+      ++counter;
+    }
+  };
+  if (shared_.dispatcher.get_all_stale_orders(helper, account_.name)) {
+  } else {
+  }
+  if (counter) {
+    log::info("Found {} new lost order(s)"sv, counter);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void DropCopy::check_stale_orders(TraceInfo const &trace_info) {
+  if (next_check_stale_orders_ < trace_info.origin_create_time) {
+    next_check_stale_orders_ = trace_info.origin_create_time + CHECK_STALE_ORDERS_FREQ;
+    if (check_stale_orders()) {
+      request_.stale_orders.request(trace_info);
+    }
+  }
 }
 
 void DropCopy::parse(TraceInfo const &trace_info, std::string_view const &message) {

@@ -6,7 +6,7 @@
     {
       "name": "limit",
       "type": "std/uint32",
-      "default": "100",
+      "default": "50",
       "description": "Maximum number of requests per interval"
     },
     {

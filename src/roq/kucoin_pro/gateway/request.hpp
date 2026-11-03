@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/utils/container.hpp"
+
 #include "roq/core/limit/request.hpp"
 
 #include "roq/kucoin_pro/gateway/shared.hpp"
@@ -21,6 +23,14 @@ struct Request final : public core::limit::Request::Handler {
   // ...
 
   core::limit::Request private_token;
+
+  core::limit::Request balances;
+  core::limit::Request positions;
+  core::limit::Request open_orders;
+  core::limit::Request stale_orders;
+  core::limit::Request trades;
+
+  utils::unordered_set<std::pair<uint8_t, uint64_t>> details_stale_orders;
 
  private:
   Shared &shared_;

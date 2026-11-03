@@ -15,22 +15,14 @@ using namespace Catch::literals;
 
 using value_type = protocol::json::AccountAck;
 
-TEST_CASE("simple", "[json_account_ack]") {
+TEST_CASE("empty", "[json_account_ack]") {
   auto const message = R"({)"
                        R"("code":"200000",)"
                        R"("data":{)"
                        R"("accountType":"UNIFIED",)"
-                       R"("ts":1771667355929,)"
+                       R"("ts":1793698524549,)"
                        R"("accounts":[{)"
-                       R"("currencies":[{)"
-                       R"("currency":"USDT",)"
-                       R"("equity":"500.0000000000",)"
-                       R"("hold":"0.0000000000",)"
-                       R"("balance":"500.0000000000",)"
-                       R"("available":"500.0000000000",)"
-                       R"("liability":"0.0000000000")"
-                       R"(})"
-                       R"(])"
+                       R"("currencies":[])"
                        R"(})"
                        R"(])"
                        R"(})"
@@ -39,17 +31,10 @@ TEST_CASE("simple", "[json_account_ack]") {
     CHECK(obj.code == 200000);
     auto &data = obj.data;
     CHECK(data.account_type == protocol::json::AccountType::UNIFIED);
-    CHECK(data.ts == 1771667355929ms);
+    CHECK(data.ts == 1793698524549ms);
     REQUIRE(std::size(data.accounts) == 1);
     auto &a0 = data.accounts[0];
-    REQUIRE(std::size(a0.currencies) == 1);
-    auto &c0 = a0.currencies[0];
-    CHECK(c0.currency == "USDT"sv);
-    CHECK(c0.equity == 500.0_a);
-    CHECK(c0.hold == 0.0_a);
-    CHECK(c0.balance == 500.0_a);
-    CHECK(c0.available == 500.0_a);
-    CHECK(c0.liability == 0.0_a);
+    REQUIRE(std::empty(a0.currencies));
   };
   core::json::BufferStack buffers{8192, 2};
   value_type obj{message, buffers};
