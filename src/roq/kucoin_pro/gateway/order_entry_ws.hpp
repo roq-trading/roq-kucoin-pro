@@ -93,7 +93,9 @@ struct OrderEntryWS final : public Base<OrderEntryWS>,
 
   // helpers
 
-  void send_ping(std::chrono::nanoseconds now);
+  void send_ping(TraceInfo const &);
+
+  void check_logon_timeout(TraceInfo const &);
 
   void parse(TraceInfo const &, std::string_view const &message);
 

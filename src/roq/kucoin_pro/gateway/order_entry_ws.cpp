@@ -106,16 +106,12 @@ void OrderEntryWS::operator()(Trace<Stop> const &) {
 
 void OrderEntryWS::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(timer.now)) {
+  if ((*connection_).refresh(trace_info)) {
     if (ready()) {
-      if (next_ping_ < timer.now) {
-        send_ping(timer.now);
-      }
+      send_ping(trace_info);
+    } else {
+      check_logon_timeout(trace_info);
     }
-  } else if (logon_timeout_.count() && logon_timeout_ < timer.now) {
-    assert(!welcome_);
-    log::warn("Did not receive the welcome message, disconnecting now..."sv);
-    (*connection_).close();
   }
 }
 
@@ -376,16 +372,27 @@ void OrderEntryWS::operator()(Trace<protocol::json::WSCancelOrderAck> const &eve
 
 // helpers
 
-void OrderEntryWS::send_ping(std::chrono::nanoseconds now) {
+void OrderEntryWS::send_ping(TraceInfo const &trace_info) {
   assert(ping_freq_.count() > 0);
-  next_ping_ = now + ping_freq_ / 2;
+  if (trace_info.origin_create_time < next_ping_) {
+    return;
+  }
+  next_ping_ = trace_info.origin_create_time + ping_freq_ / 2;
   auto message = fmt::format(
       R"({{)"
       R"("id":"{}",)"
       R"("op":"ping")"
       R"(}})"sv,
-      now.count());
+      trace_info.origin_create_time.count());
   (*connection_).send_text(message);
+}
+
+void OrderEntryWS::check_logon_timeout(TraceInfo const &trace_info) {
+  if (logon_timeout_.count() && logon_timeout_ < trace_info.origin_create_time) {
+    assert(!welcome_);
+    log::warn("Did not receive the welcome message, disconnecting now..."sv);
+    (*connection_).close();
+  }
 }
 
 void OrderEntryWS::parse(TraceInfo const &trace_info, std::string_view const &message) {

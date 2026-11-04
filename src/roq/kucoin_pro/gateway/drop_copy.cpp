@@ -123,7 +123,7 @@ void DropCopy::operator()(Trace<Stop> const &) {
 
 void DropCopy::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(timer.now)) {
+  if ((*connection_).refresh(trace_info)) {
     check_request_queue(trace_info);
     if (ready()) {
       if (next_ping_ < trace_info.origin_create_time) {
