@@ -15,7 +15,6 @@ CONFIG_FILE="$ROQ_CONFIG_PATH/roq-kucoin-pro/$CONFIG.toml"
 FLAGFILE="../../../share/flags/prod/flags.cfg"
 
 DOWNLOAD_TRADES_LOOKBACK="24h"
-WS_API=true
 
 $PREFIX ./roq-kucoin-pro \
   --name "$NAME" \
@@ -26,5 +25,4 @@ $PREFIX ./roq-kucoin-pro \
   --client_listen_address "$HOME/run/$NAME.sock" \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
   --download_trades_lookback="$DOWNLOAD_TRADES_LOOKBACK" \
-  --ws_api=$WS_API \
   $@

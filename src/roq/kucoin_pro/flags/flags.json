@@ -8,12 +8,6 @@
       "required": true,
       "default": "kucoin-pro",
       "description": "Exchange identifier"
-    },
-    {
-      "name": "ws_api",
-      "type": "std/bool",
-      "default": false,
-      "description": "Use WebSocket API?"
     }
   ]
 }
