@@ -30,7 +30,7 @@ auto const SUPPORTS = Mask{
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 2;
 
-int32_t const SYSTEM_CODE_SUCCESS = 200000;
+int32_t const SYSTEM_CODE_SUCCESS = 200'000;
 }  // namespace
 
 // === HELPERS ===
@@ -241,7 +241,8 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
           create_trace_and_dispatch_2(trace_info, currencies_ack);
           download_.check(trace_info, STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(currencies_ack.code), currencies_ack.msg);
+          auto error = map(currencies_ack.code).template get<Error>();
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, currencies_ack.msg);
         }
       }
     };
@@ -295,7 +296,8 @@ void Rest::get_instrument_ack(Trace<web::rest::Response> const &event, uint32_t 
           create_trace_and_dispatch_2(trace_info, instrument_ack);
           download_.check(trace_info, STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(instrument_ack.code), instrument_ack.msg);
+          auto error = map(instrument_ack.code).template get<Error>();
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, instrument_ack.msg);
         }
       }
     };
