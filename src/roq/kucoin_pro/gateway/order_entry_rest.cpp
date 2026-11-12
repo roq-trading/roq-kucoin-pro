@@ -368,11 +368,12 @@ void OrderEntryREST::get_account_ack(Trace<web::rest::Response> const &event) {
     };
     auto handle_success = [&](auto &body) {
       protocol::json::AccountAck account_ack{body, decode_buffer_};
-      if (account_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, account_ack);
-      } else {
+      log::info<2>("account_ack={}"sv, account_ack);
+      if (account_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(account_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, account_ack.msg);
+      } else {
+        create_trace_and_dispatch_2(trace_info, account_ack);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -382,7 +383,6 @@ void OrderEntryREST::get_account_ack(Trace<web::rest::Response> const &event) {
 
 void OrderEntryREST::operator()(Trace<protocol::json::AccountAck> const &event) {
   auto &[trace_info, account_ack] = event;
-  log::info<2>("account_ack={}"sv, account_ack);
   auto &data = account_ack.data;
   for (auto &account : data.accounts) {
     for (auto &item : account.currencies) {
@@ -437,11 +437,12 @@ void OrderEntryREST::get_position_ack(Trace<web::rest::Response> const &event) {
     };
     auto handle_success = [&](auto &body) {
       protocol::json::PositionAck position_ack{body, decode_buffer_};
-      if (position_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, position_ack);
-      } else {
+      log::info<2>("position_ack={}"sv, position_ack);
+      if (position_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(position_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, position_ack.msg);
+      } else {
+        create_trace_and_dispatch_2(trace_info, position_ack);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -451,7 +452,6 @@ void OrderEntryREST::get_position_ack(Trace<web::rest::Response> const &event) {
 
 void OrderEntryREST::operator()(Trace<protocol::json::PositionAck> const &event) {
   auto &[trace_info, position_ack] = event;
-  log::info<2>("position_ack={}"sv, position_ack);
   for (auto &item : position_ack.data) {
     log::debug("item={}"sv, item);
     /*
@@ -505,11 +505,11 @@ void OrderEntryREST::get_orders_ack(Trace<web::rest::Response> const &event) {
     };
     auto handle_success = [&](auto &body) {
       protocol::json::OrdersAck orders_ack{body, decode_buffer_};
-      if (orders_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, orders_ack);
-      } else {
+      if (orders_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(orders_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, orders_ack.msg);
+      } else {
+        create_trace_and_dispatch_2(trace_info, orders_ack);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -612,7 +612,7 @@ void OrderEntryREST::get_order(
   });
 }
 
-void OrderEntryREST::get_order_ack(Trace<web::rest::Response> const &event, std::string_view const &client_order_id) {
+void OrderEntryREST::get_order_ack(Trace<web::rest::Response> const &event, [[maybe_unused]] std::string_view const &client_order_id) {
   profile_.orders_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
@@ -622,11 +622,11 @@ void OrderEntryREST::get_order_ack(Trace<web::rest::Response> const &event, std:
       log::warn("DEBUG {}"sv, body);
       /*
       protocol::json::OrdersAck orders_ack{body, decode_buffer_};
-      if (orders_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, orders_ack);
-      } else {
+      if (orders_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(orders_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error orders_ack.msg);
+      } else {
+        create_trace_and_dispatch_2(trace_info, orders_ack);
       }
       */
     };
@@ -675,11 +675,11 @@ void OrderEntryREST::get_execution_ack(Trace<web::rest::Response> const &event) 
     };
     auto handle_success = [&](auto &body) {
       protocol::json::ExecutionAck execution_ack{body, decode_buffer_};
-      if (execution_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, execution_ack);
-      } else {
+      if (execution_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(execution_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, execution_ack.msg);
+      } else {
+        create_trace_and_dispatch_2(trace_info, execution_ack);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -787,20 +787,21 @@ void OrderEntryREST::create_order_ack(Trace<web::rest::Response> const &event, u
     };
     auto handle_success = [&](auto &body) {
       protocol::json::AddOrderAck add_order_ack{body, decode_buffer_};
-      if (add_order_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, add_order_ack, user_id, order_id, version);
-      } else {
+      log::info<2>("add_order_ack={}"sv, add_order_ack);
+      if (add_order_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(add_order_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, add_order_ack.msg);
+      } else if (shared_.settings.oms.unsafe_order_ack) {
+        create_trace_and_dispatch_2(trace_info, add_order_ack, user_id, order_id, version);
       }
     };
     process_response(event, handle_error, handle_success);
   });
 }
 
-void OrderEntryREST::operator()(Trace<protocol::json::AddOrderAck> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
-  auto &[trace_info, add_order_ack] = event;
-  log::info<2>("add_order_ack={}, user_id={}, order_id={}, version={}"sv, add_order_ack, user_id, order_id, version);
+void OrderEntryREST::operator()(
+    Trace<protocol::json::AddOrderAck> const &event, [[maybe_unused]] uint8_t user_id, [[maybe_unused]] uint64_t order_id, [[maybe_unused]] uint32_t version) {
+  [[maybe_unused]] auto &[trace_info, add_order_ack] = event;
   // XXX FIXME TODO we only have the order-id, then what?
 }
 
@@ -863,26 +864,30 @@ void OrderEntryREST::cancel_order_ack(Trace<web::rest::Response> const &event, u
     };
     auto handle_success = [&](auto &body) {
       protocol::json::CancelOrderAck cancel_order_ack{body, decode_buffer_};
-      if (cancel_order_ack.code == SYSTEM_CODE_SUCCESS) {
+      log::info<2>("cancel_order_ack={}"sv, cancel_order_ack);
+      if (cancel_order_ack.code != SYSTEM_CODE_SUCCESS) {
+        auto error = map(cancel_order_ack.code).template get<Error>();
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_order_ack.msg);
+      } else {
         if (std::empty(cancel_order_ack.data.cancelled_order_ids)) {
           auto error = Error::UNKNOWN_ORDER_ID;
           auto msg = std::empty(cancel_order_ack.msg) ? magic_enum::enum_name(error) : cancel_order_ack.msg;
           handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN_ORDER_ID, msg);
-        } else {
+        } else if (shared_.settings.oms.unsafe_order_ack) {
           create_trace_and_dispatch_2(trace_info, cancel_order_ack, user_id, order_id, version);
         }
-      } else {
-        auto error = map(cancel_order_ack.code).template get<Error>();
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_order_ack.msg);
       }
     };
     process_response(event, handle_error, handle_success);
   });
 }
 
-void OrderEntryREST::operator()(Trace<protocol::json::CancelOrderAck> const &event, uint8_t user_id, uint64_t order_id, uint32_t version) {
-  auto &[trace_info, cancel_order_ack] = event;
-  log::info<2>("cancel_order_ack={}, user_id={}, order_id={}, version={}"sv, cancel_order_ack, user_id, order_id, version);
+void OrderEntryREST::operator()(
+    Trace<protocol::json::CancelOrderAck> const &event,
+    [[maybe_unused]] uint8_t user_id,
+    [[maybe_unused]] uint64_t order_id,
+    [[maybe_unused]] uint32_t version) {
+  [[maybe_unused]] auto &[trace_info, cancel_order_ack] = event;
 }
 
 // cancel_all_orders
@@ -974,11 +979,12 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
     };
     auto handle_success = [&](auto &body) {
       protocol::json::CancelAllOrdersAck cancel_all_orders_ack{body, decode_buffer_};
-      if (cancel_all_orders_ack.code == SYSTEM_CODE_SUCCESS) {
-        create_trace_and_dispatch_2(trace_info, cancel_all_orders_ack);
-      } else {
+      log::info<2>("cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
+      if (cancel_all_orders_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(cancel_all_orders_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, cancel_all_orders_ack.msg);
+      } else {
+        create_trace_and_dispatch_2(trace_info, cancel_all_orders_ack);
       }
     };
     process_response(event, handle_error, handle_success);
@@ -986,8 +992,7 @@ void OrderEntryREST::cancel_all_orders_ack(Trace<web::rest::Response> const &eve
 }
 
 void OrderEntryREST::operator()(Trace<protocol::json::CancelAllOrdersAck> const &event) {
-  auto &[trace_info, cancel_all_orders_ack] = event;
-  log::info<2>("cancel_all_orders_ack={}"sv, cancel_all_orders_ack);
+  [[maybe_unused]] auto &[trace_info, cancel_all_orders_ack] = event;
 }
 
 // order-book
