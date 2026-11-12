@@ -791,7 +791,7 @@ void OrderEntryREST::create_order_ack(Trace<web::rest::Response> const &event, u
       if (add_order_ack.code != SYSTEM_CODE_SUCCESS) {
         auto error = map(add_order_ack.code).template get<Error>();
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, error, add_order_ack.msg);
-      } else if (shared_.settings.oms.unsafe_order_ack) {
+      } else if (shared_.settings.oms.allow_unsafe_order_ack) {
         create_trace_and_dispatch_2(trace_info, add_order_ack, user_id, order_id, version);
       }
     };
@@ -873,7 +873,7 @@ void OrderEntryREST::cancel_order_ack(Trace<web::rest::Response> const &event, u
           auto error = Error::UNKNOWN_ORDER_ID;
           auto msg = std::empty(cancel_order_ack.msg) ? magic_enum::enum_name(error) : cancel_order_ack.msg;
           handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error::UNKNOWN_ORDER_ID, msg);
-        } else if (shared_.settings.oms.unsafe_order_ack) {
+        } else if (shared_.settings.oms.allow_unsafe_order_ack) {
           create_trace_and_dispatch_2(trace_info, cancel_order_ack, user_id, order_id, version);
         }
       }
