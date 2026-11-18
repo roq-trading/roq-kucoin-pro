@@ -187,14 +187,26 @@ void OrderEntryREST::operator()(Trace<ConnectionStatus> const &event, std::strin
 
 // server::OrderActionStream
 
+void OrderEntryREST::operator()(Trace<server::oms::OrderActionBatchBegin> const &) {
+  throw server::oms::NotSupported{"not supported"sv};
+}
+
+void OrderEntryREST::operator()(Trace<server::oms::OrderActionBatchCommit> const &) {
+  throw server::oms::NotSupported{"not supported"sv};
+}
+
+void OrderEntryREST::operator()(Trace<server::oms::OrderActionBatchRollback> const &) {
+  throw server::oms::NotSupported{"not supported"sv};
+}
+
 uint16_t OrderEntryREST::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
+    Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   create_order(event, order, ref_data, request_id);
   return stream_id_;
 }
 
 uint16_t OrderEntryREST::operator()(
-    Event<ModifyOrder> const &,
+    Trace<ModifyOrder> const &,
     server::oms::Order const &,
     server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
@@ -203,7 +215,7 @@ uint16_t OrderEntryREST::operator()(
 }
 
 uint16_t OrderEntryREST::operator()(
-    Event<CancelOrder> const &event,
+    Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
@@ -212,7 +224,7 @@ uint16_t OrderEntryREST::operator()(
   return stream_id_;
 }
 
-uint16_t OrderEntryREST::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+uint16_t OrderEntryREST::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   cancel_all_orders(event, request_id);
   return stream_id_;
 }
@@ -737,16 +749,16 @@ void OrderEntryREST::operator()(Trace<protocol::json::ExecutionAck> const &event
 // create-order
 
 void OrderEntryREST::create_order(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
+    Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.create_order([&]() {
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &[message_info, create_order] = event;
+    auto &[trace_info, create_order] = event;
     auto method = web::http::Method::POST;
     auto path = shared_.api.rest_private.order_place;
     auto body = protocol::json::Encoder::add_order(encode_buffer_, create_order, order, ref_data, request_id);
-    auto headers = account_.create_headers(message_info, method, path, {}, body);
+    auto headers = account_.create_headers(trace_info, method, path, {}, body);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -758,7 +770,7 @@ void OrderEntryREST::create_order(
         .quality_of_service = io::QualityOfService::IMMEDIATE,
     };
     log::warn(R"(DEBUG request="{}")"sv, request);
-    auto callback = [this, user_id = message_info.source, order_id = create_order.order_id](auto &event, [[maybe_unused]] auto &request_id) {
+    auto callback = [this, user_id = order.user_id, order_id = order.order_id](auto &event, [[maybe_unused]] auto &request_id) {
       auto version = 1;
       create_order_ack(event, user_id, order_id, version);
     };
@@ -811,7 +823,7 @@ void OrderEntryREST::operator()(
 // cancel_order
 
 void OrderEntryREST::cancel_order(
-    Event<CancelOrder> const &event,
+    Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
     std::string_view const &request_id,
@@ -820,13 +832,13 @@ void OrderEntryREST::cancel_order(
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &[message_info, cancel_order] = event;
+    auto &[trace_info, cancel_order] = event;
     auto method = web::http::Method::POST;
     auto path = shared_.api.rest_private.order_cancel;
     // auto query = "?tradeType=FUTURES"sv;
     std::string_view query;
     auto body = protocol::json::Encoder::cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
-    auto headers = account_.create_headers(message_info, method, path, query, body);
+    auto headers = account_.create_headers(trace_info, method, path, query, body);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -838,8 +850,9 @@ void OrderEntryREST::cancel_order(
         .quality_of_service = io::QualityOfService::IMMEDIATE,
     };
     log::warn(R"(DEBUG request="{}")"sv, request);
-    auto callback = [this, user_id = message_info.source, order_id = cancel_order.order_id, version = cancel_order.version](
-                        auto &event, [[maybe_unused]] auto &request_id) { cancel_order_ack(event, user_id, order_id, version); };
+    auto callback = [this, user_id = order.user_id, order_id = order.order_id, version = cancel_order.version](auto &event, [[maybe_unused]] auto &request_id) {
+      cancel_order_ack(event, user_id, order_id, version);
+    };
     (*connection_)(request, callback, request_id);
   });
 }
@@ -896,12 +909,12 @@ void OrderEntryREST::operator()(
 
 // cancel_all_orders
 
-void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+void OrderEntryREST::cancel_all_orders(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   profile_.cancel_all_orders([&]() {
     if (!ready()) [[unlikely]] {
       throw server::oms::NotReady{"not ready"sv};
     }
-    auto &[message_info, cancel_all_orders] = event;
+    auto &[trace_info, cancel_all_orders] = event;
     auto send_ack = [&](auto &symbol) {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
           .stream_id = stream_id_,
@@ -921,7 +934,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
           .user = {},
           .strategy_id = cancel_all_orders.strategy_id,
       };
-      create_trace_and_dispatch(shared_.dispatcher, message_info, cancel_all_orders_ack);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
     };
     auto callback = [&](auto &symbol) {
       if (!std::empty(cancel_all_orders.symbol) && symbol != cancel_all_orders.symbol) {
@@ -930,7 +943,7 @@ void OrderEntryREST::cancel_all_orders(Event<CancelAllOrders> const &event, std:
       auto method = web::http::Method::POST;
       auto path = shared_.api.rest_private.order_cancel_all;
       auto body = protocol::json::Encoder::cancel_all_orders(encode_buffer_, event, request_id, symbol);
-      auto headers = account_.create_headers(message_info, method, path, {}, body);
+      auto headers = account_.create_headers(trace_info, method, path, {}, body);
       auto request = web::rest::Request{
           .method = method,
           .path = path,
