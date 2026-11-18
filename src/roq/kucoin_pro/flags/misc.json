@@ -17,6 +17,12 @@
       "description": "Decode buffer size"
     },
     {
+      "name": "disable_ws_api",
+      "type": "std/bool",
+      "default": false,
+      "description": "Disable WebSocket API?"
+    },
+    {
       "name": "top_of_book_from_ticker",
       "type": "std/bool",
       "default": false,
@@ -34,12 +40,6 @@
       "validator": "roq/flags/validators/TimePeriod",
       "default": "0s",
       "description": "Simulate disconnect"
-    },
-    {
-      "name": "disable_ws_api",
-      "type": "std/bool",
-      "default": false,
-      "description": "Disable WebSocket API?"
     }
   ]
 }
