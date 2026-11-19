@@ -125,7 +125,7 @@ void Controller::operator()(Trace<Connected> const &, [[maybe_unused]] uint8_t u
 }
 
 void Controller::operator()(Trace<Disconnected> const &event, [[maybe_unused]] uint8_t user_id) {
-  auto &[message_info, disconnected] = event;
+  auto &[trace_info, disconnected] = event;
   if (disconnected.order_cancel_policy != OrderCancelPolicy{}) {
     log::warn("** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"sv);
   }

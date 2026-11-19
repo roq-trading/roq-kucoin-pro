@@ -359,21 +359,21 @@ void DropCopy::operator()(Trace<protocol::json::OBU> const &) {
 
 void DropCopy::operator()(Trace<protocol::json::Balance> const &event) {
   profile_.balance([&]() {
-    auto &[message_info, balance] = event;
+    auto &[trace_info, balance] = event;
     log::warn("DEBUG balance={}"sv, balance);
   });
 }
 
 void DropCopy::operator()(Trace<protocol::json::PositionAll> const &event) {
   profile_.position_all([&]() {
-    auto &[message_info, position_all] = event;
+    auto &[trace_info, position_all] = event;
     log::warn("DEBUG position_all={}"sv, position_all);
   });
 }
 
 void DropCopy::operator()(Trace<protocol::json::OrderAll> const &event) {
   profile_.order_all([&]() {
-    auto &[message_info, order_all] = event;
+    auto &[trace_info, order_all] = event;
     log::warn("DEBUG order_all={}"sv, order_all);
   });
 }
