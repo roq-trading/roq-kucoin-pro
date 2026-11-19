@@ -121,11 +121,11 @@ void Controller::operator()(Trace<Timer> const &event) {
   dispatch(event);
 }
 
-void Controller::operator()(Event<Connected> const &) {
+void Controller::operator()(Trace<Connected> const &, [[maybe_unused]] uint8_t user_id) {
 }
 
-void Controller::operator()(Event<Disconnected> const &event) {
-  auto const &[message_info, disconnected] = event;
+void Controller::operator()(Trace<Disconnected> const &event, [[maybe_unused]] uint8_t user_id) {
+  auto &[message_info, disconnected] = event;
   if (disconnected.order_cancel_policy != OrderCancelPolicy{}) {
     log::warn("** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"sv);
   }
