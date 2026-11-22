@@ -35,7 +35,7 @@ struct OrderEntryWS final : public Base<OrderEntryWS>,
 
   OrderEntryWS(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  // protected:
+ protected:
   friend base_type;
 
   // server::Stream

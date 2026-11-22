@@ -38,7 +38,7 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   void operator()(Trace<PrivateToken> const &);
 
-  // protected:
+ protected:
   friend base_type;
 
   // server::Stream
@@ -55,7 +55,6 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
 
- protected:
   // web::socket::Client::Handler
 
   void operator()(Trace<web::socket::Connected> const &) override;
