@@ -78,7 +78,7 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
-    : server::MarketDataStream{stream_id}, handler_{handler}, name_{create_name(stream_id)}, index_{index},
+    : server::MarketDataStream{stream_id, {}, SUPPORTS}, handler_{handler}, name_{create_name(stream_id)}, index_{index},
       connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       request_id_{stream_id * REQUEST_ID},
       counter_{
@@ -151,9 +151,9 @@ void MarketData::operator()(Trace<ConnectionStatus> const &event, std::string_vi
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = {},
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,
         .encoding = {Encoding::JSON},
@@ -210,7 +210,7 @@ void MarketData::operator()(Trace<web::socket::Close> const &event) {
 void MarketData::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = {},
       .latency = latency.sample,
   };
@@ -273,7 +273,7 @@ void MarketData::operator()(Trace<protocol::json::Ticker> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto &data = ticker.data;
     auto top_of_book = TopOfBook{
-        .stream_id = stream_id(),
+        .stream_id = stream_id,
         .exchange = shared_.settings.exchange,
         .symbol = data.symbol,
         .layer{
@@ -308,7 +308,7 @@ void MarketData::operator()(Trace<protocol::json::Trade> const &event) {
         .maker_order_id = {},
     };
     auto trade_summary = TradeSummary{
-        .stream_id = stream_id(),
+        .stream_id = stream_id,
         .exchange = shared_.settings.exchange,
         .symbol = data.symbol,
         .trades = {&trade_2, 1},
@@ -340,7 +340,7 @@ void MarketData::operator()(Trace<protocol::json::OBU> const &event) {
     auto &data = obu.data;
     auto dispatch_top_of_book = [&]() {
       auto top_of_book = TopOfBook{
-          .stream_id = stream_id(),
+          .stream_id = stream_id,
           .exchange = shared_.settings.exchange,
           .symbol = data.symbol,
           .layer{
@@ -382,7 +382,7 @@ void MarketData::operator()(Trace<protocol::json::OBU> const &event) {
       try {
         auto create_update = [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) -> MarketByPriceUpdate {
           return {
-              .stream_id = stream_id(),
+              .stream_id = stream_id,
               .exchange = shared_.settings.exchange,
               .symbol = data.symbol,
               .bids = bids,
