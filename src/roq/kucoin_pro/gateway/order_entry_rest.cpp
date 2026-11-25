@@ -115,26 +115,6 @@ OrderEntryREST::OrderEntryREST(Handler &handler, io::Context &context, uint16_t 
 
 // server::Stream
 
-void OrderEntryREST::operator()(Trace<Start> const &event) {
-  (*connection_)(event);
-}
-
-void OrderEntryREST::operator()(Trace<Stop> const &event) {
-  (*connection_)(event);
-}
-
-void OrderEntryREST::operator()(Trace<Timer> const &event) {
-  auto &[trace_info, timer] = event;
-  if ((*connection_)(event)) {
-    if (ready()) {
-      if (master_) {
-        check_request_queue(trace_info);
-      }
-      request_.private_token.check_pending(trace_info, [this](auto &trace_info) { get_private_token(trace_info); });
-    }
-  }
-}
-
 void OrderEntryREST::operator()(metrics::Writer &writer) const {
   writer
       // counter
@@ -160,6 +140,26 @@ void OrderEntryREST::operator()(metrics::Writer &writer) const {
       .write(profile_.order_book_ack, metrics::Type::PROFILE)
       // latency
       .write(latency_.ping, metrics::Type::LATENCY);
+}
+
+void OrderEntryREST::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
+}
+
+void OrderEntryREST::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
+}
+
+void OrderEntryREST::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  if ((*connection_)(event)) {
+    if (ready()) {
+      if (master_) {
+        check_request_queue(trace_info);
+      }
+      request_.private_token.check_pending(trace_info, [this](auto &trace_info) { get_private_token(trace_info); });
+    }
+  }
 }
 
 void OrderEntryREST::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {

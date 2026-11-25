@@ -104,6 +104,25 @@ MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_i
 
 // server::Stream
 
+void MarketData::operator()(metrics::Writer &writer) const {
+  writer
+      // counter
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      .write(counter_.total_bytes_received, metrics::Type::COUNTER)
+      // profile
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.welcome, metrics::Type::PROFILE)
+      .write(profile_.error, metrics::Type::PROFILE)
+      .write(profile_.pong, metrics::Type::PROFILE)
+      .write(profile_.ack, metrics::Type::PROFILE)
+      .write(profile_.ticker, metrics::Type::PROFILE)
+      .write(profile_.trade, metrics::Type::PROFILE)
+      .write(profile_.obu, metrics::Type::PROFILE)
+      // latency
+      .write(latency_.ping, metrics::Type::LATENCY)
+      .write(latency_.heartbeat, metrics::Type::LATENCY);
+}
+
 void MarketData::operator()(Trace<Start> const &event) {
   (*connection_)(event);
 }
@@ -126,25 +145,6 @@ void MarketData::operator()(Trace<Timer> const &event) {
     log::warn("Did not receive the welcome message, disconnecting now..."sv);
     (*connection_).close();
   }
-}
-
-void MarketData::operator()(metrics::Writer &writer) const {
-  writer
-      // counter
-      .write(counter_.disconnect, metrics::Type::COUNTER)
-      .write(counter_.total_bytes_received, metrics::Type::COUNTER)
-      // profile
-      .write(profile_.parse, metrics::Type::PROFILE)
-      .write(profile_.welcome, metrics::Type::PROFILE)
-      .write(profile_.error, metrics::Type::PROFILE)
-      .write(profile_.pong, metrics::Type::PROFILE)
-      .write(profile_.ack, metrics::Type::PROFILE)
-      .write(profile_.ticker, metrics::Type::PROFILE)
-      .write(profile_.trade, metrics::Type::PROFILE)
-      .write(profile_.obu, metrics::Type::PROFILE)
-      // latency
-      .write(latency_.ping, metrics::Type::LATENCY)
-      .write(latency_.heartbeat, metrics::Type::LATENCY);
 }
 
 void MarketData::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {

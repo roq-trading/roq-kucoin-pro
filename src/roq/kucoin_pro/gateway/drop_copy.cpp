@@ -109,6 +109,24 @@ void DropCopy::operator()(Trace<PrivateToken> const &event) {
 
 // server::Stream
 
+void DropCopy::operator()(metrics::Writer &writer) const {
+  writer
+      // counter
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      // profile
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.welcome, metrics::Type::PROFILE)
+      .write(profile_.error, metrics::Type::PROFILE)
+      .write(profile_.pong, metrics::Type::PROFILE)
+      .write(profile_.ack, metrics::Type::PROFILE)
+      .write(profile_.balance, metrics::Type::PROFILE)
+      .write(profile_.position_all, metrics::Type::PROFILE)
+      .write(profile_.order_all, metrics::Type::PROFILE)
+      // latency
+      .write(latency_.ping, metrics::Type::LATENCY)
+      .write(latency_.heartbeat, metrics::Type::LATENCY);
+}
+
 void DropCopy::operator()(Trace<Start> const &event) {
   (*connection_)(event);
 }
@@ -140,24 +158,6 @@ void DropCopy::operator()(Trace<Timer> const &event) {
     log::warn("Did not receive the welcome message, disconnecting now..."sv);
     (*connection_).close();
   }
-}
-
-void DropCopy::operator()(metrics::Writer &writer) const {
-  writer
-      // counter
-      .write(counter_.disconnect, metrics::Type::COUNTER)
-      // profile
-      .write(profile_.parse, metrics::Type::PROFILE)
-      .write(profile_.welcome, metrics::Type::PROFILE)
-      .write(profile_.error, metrics::Type::PROFILE)
-      .write(profile_.pong, metrics::Type::PROFILE)
-      .write(profile_.ack, metrics::Type::PROFILE)
-      .write(profile_.balance, metrics::Type::PROFILE)
-      .write(profile_.position_all, metrics::Type::PROFILE)
-      .write(profile_.order_all, metrics::Type::PROFILE)
-      // latency
-      .write(latency_.ping, metrics::Type::LATENCY)
-      .write(latency_.heartbeat, metrics::Type::LATENCY);
 }
 
 void DropCopy::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
